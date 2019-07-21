@@ -1,6 +1,34 @@
 extern crate term;
 
+use std::{
+    io::{self, Write, Error, ErrorKind},
+    process::Command,
+};
+
+pub const DEFAULT_BUF_SIZE: usize = 8 * 1024;
+pub const SIZE_KB: i64 = 1024;
+pub const SIZE_MB: i64 = SIZE_KB * SIZE_KB;
+pub const SIZE_GB: i64 = SIZE_MB * SIZE_KB;
+pub const SIZE_PB: i64 = SIZE_GB * SIZE_KB;
+pub const SIZE_TB: i64 = SIZE_PB * SIZE_KB;
+
 pub type XResult<T> = Result<T, Box<dyn std::error::Error>>;
+
+pub fn is_macos() -> bool {
+    if cfg!(target_os = "macos") {
+        true
+    } else {
+        false
+    }
+}
+
+pub fn is_linux() -> bool {
+    if cfg!(target_os = "linux") {
+        true
+    } else {
+        false
+    }
+}
 
 pub enum MessageType { INFO, OK, WARN, ERROR, }
 
@@ -23,3 +51,45 @@ pub fn print_message(mt: MessageType, message: &str) {
         MessageType::INFO => print_message_ex(None, "[INFO]", message),
     }
 }
+
+pub fn print_lastline(line: &str) {
+    print!("\x1b[100D{}\x1b[K", line);
+    io::stdout().flush().unwrap();
+}
+
+pub fn get_display_size(size: i64) -> String {
+    if size < SIZE_KB {
+        return size.to_string();
+    }
+    if size < SIZE_MB {
+        return format!("{:.*}KB", 2, (size as f64) / 1024.);
+    }
+    if size < SIZE_GB {
+        return format!("{:.*}MB", 2, (size as f64) / 1024. / 1024.);
+    }
+    if size < SIZE_PB {
+        return format!("{:.*}GB", 2, (size as f64) / 1024. / 1024. / 1024.);
+    }
+    return format!("{:.*}PB", 2, (size as f64) / 1024. / 1024. / 1024. / 1024.);
+}
+
+pub fn run_command_and_wait(cmd: &mut Command) -> io::Result<()> {
+    cmd.spawn()?.wait()?;
+    Ok(())
+}
+
+pub fn extract_package_and_wait(dir: &str, file_name: &str) -> io::Result<()> {
+    let mut cmd: Command;
+    if file_name.ends_with(".zip") {
+        cmd = Command::new("unzip");
+    } else if file_name.ends_with(".tar.gz") {
+        cmd = Command::new("tar");
+        cmd.arg("-xzvf");
+    } else {
+        let m: &str = &format!("Unknown file type: {}", file_name);
+        return Err(Error::new(ErrorKind::Other, m));
+    }
+    cmd.arg(file_name).current_dir(dir);
+    run_command_and_wait(&mut cmd)
+}
+
