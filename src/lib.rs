@@ -52,9 +52,16 @@ pub fn print_message(mt: MessageType, message: &str) {
     }
 }
 
+pub fn flush_stdout() {
+    match io::stdout().flush() {
+        Err(err) => print_message(MessageType::ERROR, &format!("Flush stdout failed: {}", err)),
+        Ok(_) => (),
+    }
+}
+
 pub fn print_lastline(line: &str) {
     print!("\x1b[100D{}\x1b[K", line);
-    io::stdout().flush().unwrap();
+    flush_stdout();
 }
 
 pub fn get_display_size(size: i64) -> String {
