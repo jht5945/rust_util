@@ -171,7 +171,7 @@ pub fn parse_size(size: &str) -> XResult<i64> {
         return Ok((SIZE_PB as f64 * no_last_b_size[0..no_last_b_size.len()-1].parse::<f64>()?) as i64);
     }
 
-    Err(new_box_error(&format!("Cannot parse size: {}", size)))
+    Ok(no_last_b_size.parse::<i64>()?)
 }
 
 pub fn get_display_size(size: i64) -> String {
