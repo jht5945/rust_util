@@ -148,7 +148,7 @@ pub fn flush_stdout() {
 }
 
 pub fn print_lastline(line: &str) {
-    print!("\x1b[100D{}\x1b[K", line);
+    print!("\x1b[1000D{}\x1b[K", line);
     flush_stdout();
 }
 
