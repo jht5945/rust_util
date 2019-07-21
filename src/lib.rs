@@ -37,18 +37,22 @@ pub fn is_macos_or_linux() -> bool {
     is_macos() || is_linux()
 }
 
-pub fn get_home() -> Option<String> {
+pub fn get_home_str() -> Option<String> {
     match is_macos_or_linux() {
         true => env::var("HOME").ok(),
         false => None,
     }
 }
 
+pub fn get_home_path() -> Option<PathBuf> {
+    Some(PathBuf::from(get_home_str()?))
+}
+
 pub fn get_absolute_path(path: &str) -> Option<PathBuf> {
     if path == "~" {
-        return Some(PathBuf::from(get_home()?));
+        return Some(PathBuf::from(get_home_str()?));
     } else if path.starts_with("~/") {
-        return Some(PathBuf::from(&format!("{}/{}", get_home()?, &path[2..])));
+        return Some(PathBuf::from(&format!("{}/{}", get_home_str()?, &path[2..])));
     }
     fs::canonicalize(path).ok()
 }
