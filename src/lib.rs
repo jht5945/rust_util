@@ -1,7 +1,10 @@
 extern crate term;
 
 use std::{
+    env,
+    fs,
     io::{self, Write, Error, ErrorKind},
+    path::PathBuf,
     process::Command,
 };
 
@@ -32,6 +35,19 @@ pub fn is_linux() -> bool {
 
 pub fn is_macos_or_linux() -> bool {
     is_macos() || is_linux()
+}
+
+pub fn get_home() -> Option<String> {
+    env::var("HOME").ok()
+}
+
+pub fn get_absolute_path(path: &str) -> Option<PathBuf> {
+    if path == "~" {
+        return Some(PathBuf::from(get_home()?));
+    } else if path.starts_with("~/") {
+        return Some(PathBuf::from(&format!("{}/{}", get_home()?, &path[2..])));
+    }
+    fs::canonicalize(path).ok()
 }
 
 pub enum MessageType { INFO, OK, WARN, ERROR, }
