@@ -16,4 +16,9 @@ extern crate rust_util;
 use rust_util::*;
 ```
 
+Update git crate:
+```
+$ cargo update
+```
+
 
