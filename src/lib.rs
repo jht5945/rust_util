@@ -154,19 +154,21 @@ pub fn print_lastline(line: &str) {
 
 pub fn parse_size(size: &str) -> XResult<i64> {
     let lower_size = size.to_lowercase();
-    if lower_size.ends_with("b") {
-        let no_last_b_size = &lower_size[0..lower_size.len()-1];
-        if no_last_b_size.ends_with("k") {
-            return Ok((SIZE_KB as f64 * no_last_b_size[0..no_last_b_size.len()-1].parse::<f64>()?) as i64);
-        } else if no_last_b_size.ends_with("m") {
-            return Ok((SIZE_MB as f64 * no_last_b_size[0..no_last_b_size.len()-1].parse::<f64>()?) as i64);
-        } else if no_last_b_size.ends_with("g") {
-            return Ok((SIZE_GB as f64 * no_last_b_size[0..no_last_b_size.len()-1].parse::<f64>()?) as i64);
-        } else if no_last_b_size.ends_with("t") {
-            return Ok((SIZE_TB as f64 * no_last_b_size[0..no_last_b_size.len()-1].parse::<f64>()?) as i64);
-        } else if no_last_b_size.ends_with("p") {
-            return Ok((SIZE_PB as f64 * no_last_b_size[0..no_last_b_size.len()-1].parse::<f64>()?) as i64);
-        }
+    let no_last_b_size = if lower_size.ends_with("b") {
+        &lower_size[0..lower_size.len()-1]
+    } else {
+        &lower_size
+    };
+    if no_last_b_size.ends_with("k") {
+        return Ok((SIZE_KB as f64 * no_last_b_size[0..no_last_b_size.len()-1].parse::<f64>()?) as i64);
+    } else if no_last_b_size.ends_with("m") {
+        return Ok((SIZE_MB as f64 * no_last_b_size[0..no_last_b_size.len()-1].parse::<f64>()?) as i64);
+    } else if no_last_b_size.ends_with("g") {
+        return Ok((SIZE_GB as f64 * no_last_b_size[0..no_last_b_size.len()-1].parse::<f64>()?) as i64);
+    } else if no_last_b_size.ends_with("t") {
+        return Ok((SIZE_TB as f64 * no_last_b_size[0..no_last_b_size.len()-1].parse::<f64>()?) as i64);
+    } else if no_last_b_size.ends_with("p") {
+        return Ok((SIZE_PB as f64 * no_last_b_size[0..no_last_b_size.len()-1].parse::<f64>()?) as i64);
     }
 
     Err(new_box_error(&format!("Cannot parse size: {}", size)))
