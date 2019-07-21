@@ -38,7 +38,10 @@ pub fn is_macos_or_linux() -> bool {
 }
 
 pub fn get_home() -> Option<String> {
-    env::var("HOME").ok()
+    match is_macos_or_linux() {
+        true => env::var("HOME").ok(),
+        false => None,
+    }
 }
 
 pub fn get_absolute_path(path: &str) -> Option<PathBuf> {
