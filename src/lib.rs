@@ -126,6 +126,7 @@ pub fn print_message_ex(color: Option<term::color::Color>, h: &str, message: &st
         Some(c) => t.fg(c).unwrap(),
         None => (),
     }
+    t.attr(term::Attr::Bold).unwrap();
     write!(t, "{}", h).unwrap();
     t.reset().unwrap();
     println!(" {}", message);
