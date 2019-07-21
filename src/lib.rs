@@ -60,20 +60,17 @@ pub fn print_lastline(line: &str) {
 pub fn get_display_size(size: i64) -> String {
     if size < SIZE_KB {
         return size.to_string();
-    }
-    if size < SIZE_MB {
+    } else if size < SIZE_MB {
         return format!("{:.*}KB", 2, (size as f64) / 1024.);
-    }
-    if size < SIZE_GB {
+    } else if size < SIZE_GB {
         return format!("{:.*}MB", 2, (size as f64) / 1024. / 1024.);
-    }
-    if size < SIZE_PB {
+    } else if size < SIZE_PB {
         return format!("{:.*}GB", 2, (size as f64) / 1024. / 1024. / 1024.);
-    }
-    if size < SIZE_TB {
+    } else if size < SIZE_TB {
         return format!("{:.*}PB", 2, (size as f64) / 1024. / 1024. / 1024. / 1024.);
+    } else {
+        return format!("{:.*}TB", 2, (size as f64) / 1024. / 1024. / 1024. / 1024. / 1024.);
     }
-    return format!("{:.*}TB", 2, (size as f64) / 1024. / 1024. / 1024. / 1024. / 1024.);
 }
 
 pub fn run_command_and_wait(cmd: &mut Command) -> io::Result<()> {
