@@ -120,15 +120,26 @@ pub fn new_box_error(m: &str) -> Box<dyn std::error::Error> {
 
 pub enum MessageType { INFO, OK, WARN, ERROR, }
 
-pub fn print_message_ex(color: Option<term::color::Color>, h: &str, message: &str) {
+pub fn print_color(color: Option<term::color::Color>, is_bold: bool, m: &str) {
     let mut t = term::stdout().unwrap();
     match color {
         Some(c) => t.fg(c).unwrap(),
         None => (),
     }
-    t.attr(term::Attr::Bold).unwrap();
-    write!(t, "{}", h).unwrap();
+    if is_bold {
+        t.attr(term::Attr::Bold).unwrap();
+    }
+    write!(t, "{}", m).unwrap();
     t.reset().unwrap();
+}
+
+pub fn print_color_and_flush(color: Option<term::color::Color>, is_bold: bool, m: &str) {
+    print_color(color, is_bold, m);
+    flush_stdout();
+}
+
+pub fn print_message_ex(color: Option<term::color::Color>, h: &str, message: &str) {
+    print_color(color, true, h);
     println!(" {}", message);
 }
 
