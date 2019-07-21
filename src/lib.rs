@@ -30,6 +30,10 @@ pub fn is_linux() -> bool {
     }
 }
 
+pub fn is_macos_or_linux() -> bool {
+    is_macos() || is_linux()
+}
+
 pub enum MessageType { INFO, OK, WARN, ERROR, }
 
 pub fn print_message_ex(color: Option<term::color::Color>, h: &str, message: &str) {
