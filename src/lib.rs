@@ -57,6 +57,10 @@ pub fn get_absolute_path(path: &str) -> Option<PathBuf> {
     fs::canonicalize(path).ok()
 }
 
+pub fn new_box_error(m: &str) -> Box<dyn std::error::Error> {
+    Box::new(Error::new(ErrorKind::Other, m))
+}
+
 pub enum MessageType { INFO, OK, WARN, ERROR, }
 
 pub fn print_message_ex(color: Option<term::color::Color>, h: &str, message: &str) {
