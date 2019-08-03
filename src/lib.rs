@@ -167,6 +167,10 @@ pub fn flush_stdout() {
     }
 }
 
+pub fn clear_lastline() {
+    print_lastline("");
+}
+
 pub fn print_lastline(line: &str) {
     print!("\x1b[1000D{}\x1b[K", line);
     flush_stdout();
