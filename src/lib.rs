@@ -166,10 +166,7 @@ pub fn print_message(mt: MessageType, message: &str) {
 }
 
 pub fn flush_stdout() {
-    match io::stdout().flush() {
-        Err(err) => print_message(MessageType::ERROR, &format!("Flush stdout failed: {}", err)),
-        Ok(_) => (),
-    }
+    io::stdout().flush().ok();
 }
 
 pub fn clear_lastline() {
