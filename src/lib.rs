@@ -126,6 +126,10 @@ pub fn new_box_error(m: &str) -> Box<dyn std::error::Error> {
     Box::new(Error::new(ErrorKind::Other, m))
 }
 
+pub fn new_box_ioerror(m: &str) -> Box<dyn std::error::Error> {
+    Box::new(Error::new(ErrorKind::Other, m))
+}
+
 pub enum MessageType { INFO, OK, WARN, ERROR, }
 
 pub fn print_color(color: Option<term::color::Color>, is_bold: bool, m: &str) {
