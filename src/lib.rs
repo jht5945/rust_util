@@ -58,6 +58,13 @@ pub fn get_absolute_path(path: &str) -> Option<PathBuf> {
     fs::canonicalize(path).ok()
 }
 
+pub fn is_symlink(path: &Path) -> bool {
+    match path.symlink_metadata() {
+        Err(_) => false,
+        Ok(meta) => meta.file_type().is_symlink(),
+    }
+}
+
 pub fn walk_dir<FError, FProcess, FFilter>(dir: &Path,
         func_walk_error: &FError,
         func_process_file: &FProcess,
