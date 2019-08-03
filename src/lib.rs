@@ -1,7 +1,7 @@
 extern crate term;
 
 use std::{
-    cell::RefCell,
+    //cell::RefCell,
     env,
     fs,
     io::{self, Write, Error, ErrorKind},
@@ -241,11 +241,11 @@ pub fn extract_package_and_wait(dir: &str, file_name: &str) -> io::Result<()> {
 
 pub fn copy_io<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64) -> io::Result<u64>
         where R: io::Read, W: io::Write {
-    let written_cell = RefCell::new(0u64);
+    //let written_cell = RefCell::new(0u64);
     let start = SystemTime::now();
-    let written = copy_io_callback(reader, writer, total, &|total, _written, len| {
-        written_cell.replace_with(|&mut w| w + len as u64);
-        let written = *written_cell.borrow();
+    let written = copy_io_callback(reader, writer, total, &|total, written, _len| {
+        //written_cell.replace_with(|&mut w| w + len as u64);
+        //let written = *written_cell.borrow();
         let cost = SystemTime::now().duration_since(start.clone()).unwrap().as_secs();
         let mut download_speed = "-".to_string();
         if cost > 0 {
