@@ -5,7 +5,7 @@ use std::{
 };
 
 use super::get_display_size;
-use super::print_lastline;
+use super::util_msg::print_lastline;
 
 pub const DEFAULT_BUF_SIZE: usize = 8 * 1024;
 pub const SIZE_KB: i64 = 1024;
