@@ -4,7 +4,7 @@ use std::{
     time::SystemTime,
 };
 
-use super::get_display_size;
+use super::util_size::get_display_size;
 use super::util_msg::print_lastline;
 
 pub const DEFAULT_BUF_SIZE: usize = 8 * 1024;
