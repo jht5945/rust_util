@@ -114,7 +114,6 @@ pub fn new_box_ioerror(m: &str) -> Box<dyn std::error::Error> {
     Box::new(Error::new(ErrorKind::Other, m))
 }
 
-
 pub fn parse_size(size: &str) -> XResult<i64> {
     let lower_size = size.to_lowercase();
     let no_last_b_size = if lower_size.ends_with("b") {
