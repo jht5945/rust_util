@@ -9,7 +9,13 @@ use super::util_msg::print_lastline;
 
 pub const DEFAULT_BUF_SIZE: usize = 8 * 1024;
 
+
 pub fn copy_io<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64) -> io::Result<u64>
+        where R: io::Read, W: io::Write {
+    copy_io_with_head(reader, writer, total, "Downloading")
+}
+
+pub fn copy_io_with_head<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64, head: &str) -> io::Result<u64>
         where R: io::Read, W: io::Write {
     //let written_cell = RefCell::new(0u64);
     let start = SystemTime::now();
@@ -22,12 +28,14 @@ pub fn copy_io<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64)
             download_speed = format!("{}/s", get_display_size((written / cost) as i64));
         }
         if total > 0 {
-            print_lastline(&format!("Downloading, Total: {}, Downloaded: {}, Speed: {}", 
+            print_lastline(&format!("{}, Total: {}, Finished: {}, Speed: {}",
+                head,
                 get_display_size(total),
                 get_display_size(written as i64),
                 download_speed));
         } else {
-            print_lastline(&format!("Downloading, Downloaded: {}, Speed: {}", 
+            print_lastline(&format!("{}, Finished: {}, Speed: {}",
+                head,
                 get_display_size(written as i64),
                 download_speed));
         }
