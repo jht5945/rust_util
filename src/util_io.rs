@@ -8,11 +8,6 @@ use super::get_display_size;
 use super::util_msg::print_lastline;
 
 pub const DEFAULT_BUF_SIZE: usize = 8 * 1024;
-pub const SIZE_KB: i64 = 1024;
-pub const SIZE_MB: i64 = SIZE_KB * SIZE_KB;
-pub const SIZE_GB: i64 = SIZE_MB * SIZE_KB;
-pub const SIZE_PB: i64 = SIZE_GB * SIZE_KB;
-pub const SIZE_TB: i64 = SIZE_PB * SIZE_KB;
 
 pub fn copy_io<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64) -> io::Result<u64>
         where R: io::Read, W: io::Write {
