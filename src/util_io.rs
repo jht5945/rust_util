@@ -15,7 +15,7 @@ pub fn copy_io<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64)
     copy_io_with_head(reader, writer, total, "Downloading")
 }
 
-fn print_status_last_line(head: &str, total: i64, written: i64, cost: Duration) {
+pub fn print_status_last_line(head: &str, total: i64, written: i64, cost: Duration) {
     let mut download_speed = "-".to_string();
     let cost_as_secs = cost.as_secs();
     if cost_as_secs > 0 {
