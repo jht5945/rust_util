@@ -1,7 +1,7 @@
 
 use std::{
     io::{self, ErrorKind},
-    time::SystemTime,
+    time::{SystemTime, Duration},
 };
 
 use super::util_size::get_display_size;
@@ -15,6 +15,26 @@ pub fn copy_io<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64)
     copy_io_with_head(reader, writer, total, "Downloading")
 }
 
+fn print_status_last_line(head: &str, total: i64, written: i64, cost: Duration) {
+    let mut download_speed = "-".to_string();
+    let cost_as_secs = cost.as_secs();
+    if cost_as_secs > 0 {
+        download_speed = format!("{}/s", get_display_size((written / (cost_as_secs as i64)) as i64));
+    }
+    if total > 0 {
+        print_lastline(&format!("{}, Total: {}, Finished: {}, Speed: {}",
+            head,
+            get_display_size(total),
+            get_display_size(written),
+            download_speed));
+    } else {
+        print_lastline(&format!("{}, Finished: {}, Speed: {}",
+            head,
+            get_display_size(written),
+            download_speed));
+    }
+}
+
 pub fn copy_io_with_head<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64, head: &str) -> io::Result<u64>
         where R: io::Read, W: io::Write {
     //let written_cell = RefCell::new(0u64);
@@ -22,23 +42,8 @@ pub fn copy_io_with_head<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, t
     let written = copy_io_callback(reader, writer, total, &|total, written, _len| {
         //written_cell.replace_with(|&mut w| w + len as u64);
         //let written = *written_cell.borrow();
-        let cost = SystemTime::now().duration_since(start.clone()).unwrap().as_secs();
-        let mut download_speed = "-".to_string();
-        if cost > 0 {
-            download_speed = format!("{}/s", get_display_size((written / cost) as i64));
-        }
-        if total > 0 {
-            print_lastline(&format!("{}, Total: {}, Finished: {}, Speed: {}",
-                head,
-                get_display_size(total),
-                get_display_size(written as i64),
-                download_speed));
-        } else {
-            print_lastline(&format!("{}, Finished: {}, Speed: {}",
-                head,
-                get_display_size(written as i64),
-                download_speed));
-        }
+        let cost = SystemTime::now().duration_since(start.clone()).unwrap();
+        print_status_last_line(head, total, written as i64, cost);
     });
     println!();
     written
