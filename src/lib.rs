@@ -6,6 +6,7 @@ use std::{
 
 pub mod util_io;
 pub mod util_os;
+pub mod util_env;
 pub mod util_cmd;
 pub mod util_msg;
 pub mod util_size;
