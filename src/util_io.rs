@@ -1,14 +1,24 @@
 
 use std::{
-    io::{self, ErrorKind},
+    io::{self,
+        ErrorKind,
+        prelude::*,
+    },
     time::{SystemTime, Duration},
 };
 
+use super::XResult;
 use super::util_size::get_display_size;
 use super::util_msg::print_lastline;
 
 pub const DEFAULT_BUF_SIZE: usize = 8 * 1024;
 
+
+pub fn read_to_string(read: &mut dyn Read) -> XResult<String> {
+    let mut buffer = String::new();
+    read.read_to_string(&mut buffer)?;
+    Ok(buffer)
+}
 
 pub fn copy_io<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64) -> io::Result<u64>
         where R: io::Read, W: io::Write {
