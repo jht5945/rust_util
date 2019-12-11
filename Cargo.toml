@@ -3,6 +3,8 @@ name = "rust_util"
 version = "0.1.0"
 authors = ["Hatter Jiang <jht5945@gmail.com>"]
 edition = "2018"
+description = "Hatter's Rust Util"
+license = "MIT"
 
 [dependencies]
 libc = "0.2.65"
