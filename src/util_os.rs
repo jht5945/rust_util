@@ -1,18 +1,10 @@
 
 pub fn is_macos() -> bool {
-    if cfg!(target_os = "macos") {
-        true
-    } else {
-        false
-    }
+    cfg!(target_os = "macos")
 }
 
 pub fn is_linux() -> bool {
-    if cfg!(target_os = "linux") {
-        true
-    } else {
-        false
-    }
+    cfg!(target_os = "linux")
 }
 
 pub fn is_macos_or_linux() -> bool {

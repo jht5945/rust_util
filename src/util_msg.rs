@@ -15,20 +15,18 @@ pub fn is_atty() -> bool{
 
 pub fn print_color(color: Option<term::color::Color>, is_bold: bool, m: &str) {
     let mut t = term::stdout().unwrap();
-    match *IS_ATTY {
-        true => {
-            match color {
-                Some(c) => t.fg(c).unwrap(),
-                None => (),
-            }
-            if is_bold {
-                t.attr(term::Attr::Bold).unwrap();
-            }
-            write!(t, "{}", m).unwrap();
-            t.reset().unwrap();
-        },
-        false => write!(t, "{}", m).unwrap(),
-    };
+    if *IS_ATTY {
+        if let Some(c) = color {
+            t.fg(c).unwrap();
+        }
+        if is_bold {
+            t.attr(term::Attr::Bold).unwrap();
+        }
+        write!(t, "{}", m).unwrap();
+        t.reset().unwrap();
+    } else {
+        write!(t, "{}", m).unwrap();
+    }
 }
 
 pub fn print_color_and_flush(color: Option<term::color::Color>, is_bold: bool, m: &str) {

@@ -82,11 +82,8 @@ fn walk_dir_with_depth_check<FError, FProcess, FFilter>(depth: &mut u32, dir: &P
         } else if sub_dir.is_dir() {
             if func_filter_dir(&sub_dir) {
                 *depth += 1;
-                match walk_dir_with_depth_check(depth, &sub_dir, func_walk_error, func_process_file, func_filter_dir) {
-                    Err(err) => {
-                        func_walk_error(&sub_dir, err);
-                    },
-                    Ok(_) => (),
+                if let Err(err) = walk_dir_with_depth_check(depth, &sub_dir, func_walk_error, func_process_file, func_filter_dir) {
+                    func_walk_error(&sub_dir, err);
                 }
                 *depth -= 1;
             }
