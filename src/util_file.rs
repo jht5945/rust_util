@@ -12,9 +12,10 @@ use super::{
 };
 
 pub fn get_home_str() -> Option<String> {
-    match util_os::is_macos_or_linux() {
-        true => env::var("HOME").ok(),
-        false => None,
+    if util_os::is_macos_or_linux() {
+        env::var("HOME").ok()
+    } else {
+        None
     }
 }
 
@@ -84,7 +85,6 @@ fn walk_dir_with_depth_check<FError, FProcess, FFilter>(depth: &mut u32, dir: &P
                 match walk_dir_with_depth_check(depth, &sub_dir, func_walk_error, func_process_file, func_filter_dir) {
                     Err(err) => {
                         func_walk_error(&sub_dir, err);
-                        ()
                     },
                     Ok(_) => (),
                 }

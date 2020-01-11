@@ -9,8 +9,8 @@ lazy_static! {
 pub enum MessageType { INFO, OK, WARN, ERROR, DEBUG, }
 
 pub fn is_atty() -> bool{
-    let isatty = unsafe { libc::isatty(libc::STDOUT_FILENO as i32) } != 0;
-    isatty
+    let stdout_fileno = unsafe { libc::isatty(libc::STDOUT_FILENO as i32) };
+    stdout_fileno != 0
 }
 
 pub fn print_color(color: Option<term::color::Color>, is_bold: bool, m: &str) {
