@@ -20,6 +20,12 @@ pub fn read_to_string(read: &mut dyn Read) -> XResult<String> {
     Ok(buffer)
 }
 
+pub fn read_to_bytes(read: &mut dyn Read) -> XResult<Vec<u8>> {
+    let mut buffer = vec![];
+    read.read_to_end(&mut buffer)?;
+    Ok(buffer)
+}
+
 pub fn copy_io<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64) -> io::Result<u64>
         where R: io::Read, W: io::Write {
     copy_io_with_head(reader, writer, total, "Downloading")
