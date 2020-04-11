@@ -7,6 +7,7 @@ use std::{
 
 use super::{
     util_os,
+    util_io,
     new_box_ioerror,
     XResult,
 };
@@ -30,6 +31,13 @@ pub fn get_absolute_path(path: &str) -> Option<PathBuf> {
         return Some(PathBuf::from(&format!("{}/{}", get_home_str()?, &path[2..])));
     }
     fs::canonicalize(path).ok()
+}
+
+pub fn read_file_content(file: &str) -> XResult<String> {
+    match get_absolute_path(file) {
+        None => return Err(new_box_ioerror(&format!("File not found: {}", file))),
+        Some(p) => util_io::read_to_string(&mut fs::File::open(p)?),
+    }
 }
 
 pub fn is_symlink(path: &Path) -> bool {
@@ -60,19 +68,17 @@ fn walk_dir_with_depth_check<FError, FProcess, FFilter>(depth: &mut u32, dir: &P
         return Err(new_box_ioerror(&format!("Depth exceed, depth: {}, path: {:?}", *depth, dir)));
     }
     let read_dir = match dir.read_dir() {
-        Err(err) => {
+        Ok(rd) => rd, Err(err) => {
             func_walk_error(&dir, Box::new(err));
             return Ok(());
         },
-        Ok(rd) => rd,
     };
     for dir_entry_item in read_dir {
         let dir_entry = match dir_entry_item {
-            Err(err) => {
+            Ok(item) => item, Err(err) => {
                 func_walk_error(&dir, Box::new(err));
                 continue; // Ok?
             },
-            Ok(item) => item,
         };
 
         let path_buf = dir_entry.path();
