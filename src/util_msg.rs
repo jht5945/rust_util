@@ -8,7 +8,7 @@ lazy_static! {
 
 pub enum MessageType { INFO, OK, WARN, ERROR, DEBUG, }
 
-pub fn is_atty() -> bool{
+pub fn is_atty() -> bool {
     let stdout_fileno = unsafe { libc::isatty(libc::STDOUT_FILENO as i32) };
     stdout_fileno != 0
 }
@@ -83,9 +83,9 @@ pub fn get_term_width_message(message: &str, left: usize) -> String {
                return message.to_string();
             }
             let mut s = String::new();
-            s.push_str(&message[0..find_char_boundary(&message, w-10-5-left)]);
+            s.push_str(&message[0..find_char_boundary(&message, w - 10 - 5 - left)]);
             s.push_str("[...]");
-            s.push_str(&message[find_char_boundary(&message, len-10)..]);
+            s.push_str(&message[find_char_boundary(&message, len - 10)..]);
             s
         },
     }

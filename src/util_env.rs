@@ -2,8 +2,5 @@
 use std::env;
 
 pub fn is_env_on(var: &str) -> bool {
-    match env::var(var) {
-        Err(_) => false,
-        Ok(v) => (v == "TRUE" || v == "true" || v =="YES" || v == "yes" || v == "1"),
-    }
+    env::var(var).map(|v| v.to_lowercase()).map(|v| (v == "true" || v == "yes" || v == "1")).unwrap_or(false)
 }

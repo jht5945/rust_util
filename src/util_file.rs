@@ -6,6 +6,7 @@ use std::{
 };
 
 use super::{
+    iff,
     util_os,
     util_io,
     new_box_ioerror,
@@ -13,11 +14,7 @@ use super::{
 };
 
 pub fn get_home_str() -> Option<String> {
-    if util_os::is_macos_or_linux() {
-        env::var("HOME").ok()
-    } else {
-        None
-    }
+    iff!(util_os::is_macos_or_linux(), env::var("HOME").ok(), None)
 }
 
 pub fn get_home_path() -> Option<PathBuf> {
@@ -25,12 +22,11 @@ pub fn get_home_path() -> Option<PathBuf> {
 }
 
 pub fn get_absolute_path(path: &str) -> Option<PathBuf> {
-    if path == "~" {
-        return Some(PathBuf::from(get_home_str()?));
-    } else if path.starts_with("~/") {
-        return Some(PathBuf::from(&format!("{}/{}", get_home_str()?, &path[2..])));
+    match path {
+        "~" => Some(PathBuf::from(get_home_str()?)),
+        path if path.starts_with("~/")  => Some(PathBuf::from(&format!("{}/{}", get_home_str()?, &path[2..]))),
+        path => fs::canonicalize(path).ok(),
     }
-    fs::canonicalize(path).ok()
 }
 
 pub fn read_file_content(file: &str) -> XResult<String> {
@@ -41,10 +37,7 @@ pub fn read_file_content(file: &str) -> XResult<String> {
 }
 
 pub fn is_symlink(path: &Path) -> bool {
-    match path.symlink_metadata() {
-        Err(_) => false,
-        Ok(meta) => meta.file_type().is_symlink(),
-    }
+    path.symlink_metadata().map(|meta| meta.file_type().is_symlink()).unwrap_or(false)
 }
 
 pub fn walk_dir<FError, FProcess, FFilter>(dir: &Path,
