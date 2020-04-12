@@ -2,9 +2,7 @@
 extern crate lazy_static;
 extern crate term;
 
-use std::{
-    io::{Error, ErrorKind},
-};
+use std::io::{ Error, ErrorKind, };
 
 pub mod util_io;
 pub mod util_os;
