@@ -1,9 +1,11 @@
 use std::{
     io::{self, Write},
+    sync::{Arc, Mutex},
 };
 
 lazy_static! {
     pub static ref IS_ATTY: bool = is_atty();
+    static ref PRINT_MESSAGE_LOCK: Arc<Mutex<usize>> = Arc::new(Mutex::new(0));
 }
 
 pub enum MessageType { INFO, OK, WARN, ERROR, DEBUG, }
@@ -35,8 +37,10 @@ pub fn print_color_and_flush(color: Option<term::color::Color>, is_bold: bool, m
 }
 
 pub fn print_message_ex(color: Option<term::color::Color>, h: &str, message: &str) {
+    let mut lock = PRINT_MESSAGE_LOCK.lock().unwrap();
     print_color(color, true, h);
     println!(" {}", message);
+    *lock += 1;
 }
 
 pub fn print_message(mt: MessageType, message: &str) {
