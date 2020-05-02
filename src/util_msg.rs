@@ -5,7 +5,7 @@ use std::{
 
 lazy_static! {
     pub static ref IS_ATTY: bool = is_atty();
-    static ref PRINT_MESSAGE_LOCK: Arc<Mutex<usize>> = Arc::new(Mutex::new(0));
+    static ref PRINT_MESSAGE_LOCK: Arc<Mutex<()>> = Arc::new(Mutex::new(()));
 }
 
 pub enum MessageType { INFO, OK, WARN, ERROR, DEBUG, }
@@ -40,7 +40,7 @@ pub fn print_message_ex(color: Option<term::color::Color>, h: &str, message: &st
     let mut lock = PRINT_MESSAGE_LOCK.lock().unwrap();
     print_color(color, true, h);
     println!(" {}", message);
-    *lock += 1;
+    *lock = ();
 }
 
 pub fn print_message(mt: MessageType, message: &str) {

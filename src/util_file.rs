@@ -42,7 +42,7 @@ pub fn get_absolute_path(path: &str) -> Option<PathBuf> {
 
 pub fn read_file_content(file: &str) -> XResult<String> {
     match get_absolute_path(file) {
-        None => return Err(new_box_ioerror(&format!("File not found: {}", file))),
+        None => Err(new_box_ioerror(&format!("File not found: {}", file))),
         Some(p) => util_io::read_to_string(&mut fs::File::open(p)?),
     }
 }
@@ -89,14 +89,12 @@ fn walk_dir_with_depth_check<FError, FProcess, FFilter>(depth: &mut u32, dir: &P
         let sub_dir = path_buf.as_path();
         if sub_dir.is_file() {
             func_process_file(&sub_dir);
-        } else if sub_dir.is_dir() {
-            if func_filter_dir(&sub_dir) {
-                *depth += 1;
-                if let Err(err) = walk_dir_with_depth_check(depth, &sub_dir, func_walk_error, func_process_file, func_filter_dir) {
-                    func_walk_error(&sub_dir, err);
-                }
-                *depth -= 1;
+        } else if sub_dir.is_dir() && func_filter_dir(&sub_dir) {
+            *depth += 1;
+            if let Err(err) = walk_dir_with_depth_check(depth, &sub_dir, func_walk_error, func_process_file, func_filter_dir) {
+                func_walk_error(&sub_dir, err);
             }
+            *depth -= 1;
         } // should process else ? not file, dir
     }
     Ok(())
