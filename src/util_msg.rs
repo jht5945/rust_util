@@ -43,12 +43,18 @@ pub fn print_message_ex(color: Option<term::color::Color>, h: &str, message: &st
     *lock = ();
 }
 
+pub fn print_ok   (message: &str) { print_message(MessageType::OK,    message); }
+pub fn print_warn (message: &str) { print_message(MessageType::WARN,  message); }
+pub fn print_error(message: &str) { print_message(MessageType::ERROR, message); }
+pub fn print_info (message: &str) { print_message(MessageType::INFO,  message); }
+pub fn print_debug(message: &str) { print_message(MessageType::DEBUG, message); }
+
 pub fn print_message(mt: MessageType, message: &str) {
     match mt {
-        MessageType::OK => print_message_ex(Some(term::color::GREEN),      "[OK   ]", message),
-        MessageType::WARN => print_message_ex(Some(term::color::YELLOW),   "[WARN ]", message),
+        MessageType::OK    => print_message_ex(Some(term::color::GREEN),   "[OK   ]", message),
+        MessageType::WARN  => print_message_ex(Some(term::color::YELLOW),  "[WARN ]", message),
         MessageType::ERROR => print_message_ex(Some(term::color::RED),     "[ERROR]", message),
-        MessageType::INFO => print_message_ex(None,                        "[INFO ]", message),
+        MessageType::INFO  => print_message_ex(None,                       "[INFO ]", message),
         MessageType::DEBUG => print_message_ex(Some(term::color::MAGENTA), "[DEBUG]", message),
     }
 }
