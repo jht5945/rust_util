@@ -1,5 +1,6 @@
 
 use std::{
+    fs::File,
     io::{self,
         ErrorKind,
         prelude::*,
@@ -7,12 +8,23 @@ use std::{
     time::{SystemTime, Duration},
 };
 
-use super::XResult;
+use super::{ XResult, new_box_ioerror, };
 use super::util_size::get_display_size;
 use super::util_msg::print_lastline;
 
 pub const DEFAULT_BUF_SIZE: usize = 8 * 1024;
 
+
+pub fn get_read_stdin_or_file(file: &str) -> XResult<Box<dyn Read>> {
+    if file.is_empty() {
+        Ok(Box::new(io::stdin()))
+    } else {
+        match File::open(file) {
+            Ok(f) => Ok(Box::new(f)),
+            Err(err) => Err(new_box_ioerror(&format!("Open file {}, erorr: {}", file, err))),
+        }
+    }
+}
 
 pub fn read_to_string(read: &mut dyn Read) -> XResult<String> {
     let mut buffer = String::new();
