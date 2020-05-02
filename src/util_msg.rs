@@ -8,6 +8,7 @@ lazy_static! {
     static ref PRINT_MESSAGE_LOCK: Arc<Mutex<()>> = Arc::new(Mutex::new(()));
 }
 
+#[derive(Clone, Copy)]
 pub enum MessageType { INFO, OK, WARN, ERROR, DEBUG, }
 
 pub fn is_atty() -> bool {
@@ -56,6 +57,12 @@ pub fn print_message(mt: MessageType, message: &str) {
         MessageType::ERROR => print_message_ex(Some(term::color::RED),     "[ERROR]", message),
         MessageType::INFO  => print_message_ex(None,                       "[INFO ]", message),
         MessageType::DEBUG => print_message_ex(Some(term::color::MAGENTA), "[DEBUG]", message),
+    }
+}
+
+impl MessageType {
+    pub fn print(&self, message: &str) {
+        print_message(*self, message);
     }
 }
 
