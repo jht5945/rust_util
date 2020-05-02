@@ -17,6 +17,17 @@ pub fn get_home_str() -> Option<String> {
     iff!(util_os::is_macos_or_linux(), env::var("HOME").ok(), None)
 }
 
+pub fn resolve_file_path(path: &str) -> String {
+    let home_path = match get_home_str() {
+        Some(p) => p, None => return path.to_owned(),
+    };
+    match path {
+        "~" => home_path,
+        p if p.starts_with("~/") => home_path + &path.chars().skip(1).collect::<String>(),
+        p => p.to_owned(),
+    }
+}
+
 pub fn get_home_path() -> Option<PathBuf> {
     Some(PathBuf::from(get_home_str()?))
 }
