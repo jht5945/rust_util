@@ -1,6 +1,6 @@
 [package]
 name = "rust_util"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Hatter Jiang <jht5945@gmail.com>"]
 edition = "2018"
 description = "Hatter's Rust Util"

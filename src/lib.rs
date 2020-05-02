@@ -9,6 +9,7 @@ pub mod util_os;
 pub mod util_env;
 pub mod util_cmd;
 pub mod util_msg;
+pub mod util_str;
 pub mod util_size;
 pub mod util_file;
 pub mod util_time;

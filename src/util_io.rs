@@ -11,6 +11,7 @@ use std::{
 use super::{ XResult, new_box_ioerror, };
 use super::util_size::get_display_size;
 use super::util_msg::print_lastline;
+use super::util_file::resolve_file_path;
 
 pub const DEFAULT_BUF_SIZE: usize = 8 * 1024;
 
@@ -19,7 +20,7 @@ pub fn get_read_stdin_or_file(file: &str) -> XResult<Box<dyn Read>> {
     if file.is_empty() {
         Ok(Box::new(io::stdin()))
     } else {
-        match File::open(file) {
+        match File::open(&resolve_file_path(file)) {
             Ok(f) => Ok(Box::new(f)),
             Err(err) => Err(new_box_ioerror(&format!("Open file {}, erorr: {}", file, err))),
         }
