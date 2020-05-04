@@ -13,6 +13,16 @@ use super::{
     XResult,
 };
 
+pub fn locate_file(files: &[String]) -> Option<PathBuf> {
+    for f in files {
+        match PathBuf::from(&resolve_file_path(f)) {
+            pb if pb.is_file() => return Some(pb),
+            _ => (),
+        }
+    }
+    None
+}
+
 pub fn get_home_str() -> Option<String> {
     iff!(util_os::is_macos_or_linux(), env::var("HOME").ok(), None)
 }
