@@ -1,28 +1,29 @@
 
 /// Split string to lines, splited by '\r', '\n' or "\r\n"
 pub fn read_str_to_lines(s: &str) -> Vec<String> {
-    let mut r = vec![];
-    let mut line = String::new();
-    let mut cs = s.chars().peekable();
-    while let Some(c) = cs.next() {
-        if c == '\n' || c == '\r' {
-            r.push(line.clone());
-            line.clear();
-            if c == '\r' {
-                if let Some(nc) = cs.peek() {
-                    if *nc == '\n' {
-                        cs.next();
-                    }
-                }
-            }
-        } else {
-            line.push(c);
-        }
-    }
-    if !line.is_empty() {
-        r.push(line);
-    }
-    r
+    s.lines().map(|ln| ln.to_owned()).collect()
+    // let mut r = vec![];
+    // let mut line = String::new();
+    // let mut cs = s.chars().peekable();
+    // while let Some(c) = cs.next() {
+    //     if c == '\n' || c == '\r' {
+    //         r.push(line.clone());
+    //         line.clear();
+    //         if c == '\r' {
+    //             if let Some(nc) = cs.peek() {
+    //                 if *nc == '\n' {
+    //                     cs.next();
+    //                 }
+    //             }
+    //         }
+    //     } else {
+    //         line.push(c);
+    //     }
+    // }
+    // if !line.is_empty() {
+    //     r.push(line);
+    // }
+    // r
 }
 
 pub fn split_kv(s: &str, split: char) -> (String, String) {
