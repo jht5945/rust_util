@@ -1,7 +1,8 @@
 
 use std::{
     env,
-    fs,
+    fs::{self, File},
+    io::{Lines, BufReader},
     path::{Path, PathBuf},
 };
 
@@ -12,6 +13,69 @@ use super::{
     new_box_ioerror,
     XResult,
 };
+
+pub struct JoinFilesReader {
+    files: Vec<String>,
+    file_ptr: usize,
+    file_lines: Option<Box<Lines<BufReader<File>>>>,
+}
+
+fn open_file_as_lines(f: &str) -> XResult<Lines<BufReader<File>>> {
+    let f = File::open(&f)?;
+    let br = BufReader::new(f);
+    use std::io::BufRead;
+    Ok(br.lines())
+}
+
+impl JoinFilesReader {
+
+    pub fn new(fns: &[&str]) -> XResult<Self> {
+        let mut files: Vec<String> = vec![];
+        for f in fns {
+            files.push(f.to_string());
+        }
+        let file_ptr = 0;
+        let mut file_lines = None;
+        if !files.is_empty() {
+            file_lines = Some(Box::new(open_file_as_lines(&files[0])?));
+        }
+        Ok(Self {
+            files,
+            file_ptr,
+            file_lines,
+        })
+    }
+}
+
+impl Iterator for JoinFilesReader {
+    type Item = XResult<String>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            match self.file_lines {
+                Some(ref mut ln) => match ln.next() {
+                    Some(r) => return Some(r.map_err(|e| e.into())),
+                    None => {
+                        self.file_ptr += 1;
+                        self.file_lines = None;
+                        if self.file_ptr >= self.files.len() {
+                            return None;
+                        } else {
+                            // if open file failed, will not continue read files
+                            self.file_lines = Some(Box::new(match open_file_as_lines(&self.files[self.file_ptr]) {
+                                Ok(ln) => ln, Err(e) => return Some(Err(e)),
+                            }));
+                        }
+                    },
+                },
+                None => return None,
+            }
+            if self.file_ptr >= self.files.len() {
+                return None;
+            }
+        }
+    }
+}
 
 pub fn locate_file(files: &[String]) -> Option<PathBuf> {
     for f in files {
