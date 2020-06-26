@@ -2,6 +2,7 @@ use std::{
     io::{self, Write},
     sync::{Arc, Mutex},
 };
+use atty::Stream;
 
 lazy_static! {
     pub static ref IS_ATTY: bool = is_atty();
@@ -12,8 +13,7 @@ lazy_static! {
 pub enum MessageType { INFO, OK, WARN, ERROR, DEBUG, }
 
 pub fn is_atty() -> bool {
-    let stdout_fileno = unsafe { libc::isatty(libc::STDOUT_FILENO as i32) };
-    stdout_fileno != 0
+    atty::is(Stream::Stdout)
 }
 
 pub fn print_color(color: Option<term::color::Color>, is_bold: bool, m: &str) {
