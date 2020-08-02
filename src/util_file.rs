@@ -77,10 +77,30 @@ impl Iterator for JoinFilesReader {
     }
 }
 
-pub fn find_parents_exists_dir(dir: &str) -> Option<PathBuf> {
+pub fn find_parents_exists_file(file: &str) -> Option<PathBuf> {
+    let mut loop_count = 0_usize;
     match PathBuf::from(".").canonicalize() {
         Err(_) => None,
         Ok(mut path) => loop {
+            loop_count += 1;
+            if loop_count > 100 { panic!("Loop count more than 100!"); }
+            if path.join(file).is_file() {
+                return Some(path);
+            }
+            if !path.pop() {
+                return None;
+            }
+        }
+    }
+}
+
+pub fn find_parents_exists_dir(dir: &str) -> Option<PathBuf> {
+    let mut loop_count = 0_usize;
+    match PathBuf::from(".").canonicalize() {
+        Err(_) => None,
+        Ok(mut path) => loop {
+            loop_count += 1;
+            if loop_count > 100 { panic!("Loop count more than 100!"); }
             if path.join(dir).is_dir() {
                 return Some(path);
             }
