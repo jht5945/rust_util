@@ -2,7 +2,7 @@
 extern crate lazy_static;
 extern crate term;
 
-use std::io::{ Error, ErrorKind, };
+use std::io::{ Error, ErrorKind };
 
 pub mod util_io;
 pub mod util_os;
@@ -16,11 +16,8 @@ pub mod util_time;
 
 /// iff!(condition, result_when_true, result_when_false)
 #[macro_export] macro_rules! iff {
-    ($c:expr, $t:expr, $f:expr) => {
-        if $c { $t } else { $f }
-    };
+    ($c:expr, $t:expr, $f:expr) => ( if $c { $t } else { $f } )
 }
-
 #[macro_export] macro_rules! information {
     ($($arg:tt)+) => ( crate::util_msg::print_info(&format!($($arg)+)); )
 }

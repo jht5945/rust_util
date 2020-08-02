@@ -1,6 +1,6 @@
 use std::{
-    io::{self, Write},
-    sync::{Arc, Mutex},
+    io::{ self, Write },
+    sync::{ Arc, Mutex },
 };
 
 lazy_static! {

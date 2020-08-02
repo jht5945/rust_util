@@ -1,11 +1,7 @@
-
 use std::{
     fs::File,
-    io::{self,
-        ErrorKind,
-        prelude::*,
-    },
-    time::{SystemTime, Duration},
+    io::{ self, ErrorKind, prelude::* },
+    time::{ SystemTime, Duration },
 };
 
 use super::{ XResult, new_box_ioerror, };
@@ -66,12 +62,9 @@ pub fn print_status_last_line(head: &str, total: i64, written: i64, cost: Durati
 
 pub fn copy_io_with_head<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64, head: &str) -> io::Result<u64>
         where R: io::Read, W: io::Write {
-    //let written_cell = RefCell::new(0u64);
     let start = SystemTime::now();
     let written = copy_io_callback(reader, writer, total, &|total, written, _len| {
-        //written_cell.replace_with(|&mut w| w + len as u64);
-        //let written = *written_cell.borrow();
-        let cost = SystemTime::now().duration_since(start.clone()).unwrap();
+        let cost = SystemTime::now().duration_since(start).unwrap();
         print_status_last_line(head, total, written as i64, cost);
     });
     println!();
@@ -81,7 +74,7 @@ pub fn copy_io_with_head<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, t
 pub fn copy_io_callback<R: ?Sized, W: ?Sized, FCallback>(reader: &mut R, writer: &mut W, total: i64, callback: &FCallback) -> io::Result<u64>
         where R: io::Read,
               W: io::Write,
-              FCallback: Fn(i64, u64, usize) -> () {
+              FCallback: Fn(i64, u64, usize) {
     let mut written = 0u64;
     let mut buf: [u8; DEFAULT_BUF_SIZE] = [0u8; DEFAULT_BUF_SIZE];
     loop {

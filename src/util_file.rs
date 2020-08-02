@@ -1,9 +1,9 @@
 
 use std::{
     env,
-    fs::{self, File},
-    io::{Lines, BufReader},
-    path::{Path, PathBuf},
+    fs::{ self, File },
+    io::{ Lines, BufReader },
+    path::{ Path, PathBuf },
 };
 
 use super::{
@@ -143,8 +143,8 @@ pub fn walk_dir<FError, FProcess, FFilter>(dir: &Path,
         func_walk_error: &FError,
         func_process_file: &FProcess,
         func_filter_dir: &FFilter) -> XResult<()>
-        where FError: Fn(&Path, Box<dyn std::error::Error>) -> (),
-              FProcess: Fn(&Path) -> (),
+        where FError: Fn(&Path, Box<dyn std::error::Error>),
+              FProcess: Fn(&Path),
               FFilter: Fn(&Path) -> bool {
     walk_dir_with_depth_check(&mut 0u32, dir, func_walk_error, func_process_file, func_filter_dir)
 }
@@ -153,8 +153,8 @@ fn walk_dir_with_depth_check<FError, FProcess, FFilter>(depth: &mut u32, dir: &P
         func_walk_error: &FError,
         func_process_file: &FProcess,
         func_filter_dir: &FFilter) -> XResult<()>
-        where FError: Fn(&Path, Box<dyn std::error::Error>) -> (),
-              FProcess: Fn(&Path) -> (),
+        where FError: Fn(&Path, Box<dyn std::error::Error>),
+              FProcess: Fn(&Path),
               FFilter: Fn(&Path) -> bool {
     if *depth > 100u32 {
         return Err(new_box_ioerror(&format!("Depth exceed, depth: {}, path: {:?}", *depth, dir)));
