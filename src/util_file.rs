@@ -6,10 +6,11 @@ use std::{
     path::{ Path, PathBuf },
 };
 
-use super::{
+use crate::{
     iff,
     util_os,
     util_io,
+    util_msg,
     new_box_ioerror,
     XResult,
 };
@@ -83,7 +84,10 @@ pub fn find_parents_exists_file(file: &str) -> Option<PathBuf> {
         Err(_) => None,
         Ok(mut path) => loop {
             loop_count += 1;
-            if loop_count > 1000 { panic!("Loop count more than 1000!"); }
+            if loop_count > 1000 {
+                util_msg::print_error("Loop count more than 1000!");
+                return None;
+            }
             if path.join(file).is_file() {
                 return Some(path);
             }
@@ -100,7 +104,10 @@ pub fn find_parents_exists_dir(dir: &str) -> Option<PathBuf> {
         Err(_) => None,
         Ok(mut path) => loop {
             loop_count += 1;
-            if loop_count > 1000 { panic!("Loop count more than 1000!"); }
+            if loop_count > 1000 {
+                util_msg::print_error("Loop count more than 1000!");
+                return None;
+            }
             if path.join(dir).is_dir() {
                 return Some(path);
             }
