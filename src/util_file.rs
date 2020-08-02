@@ -77,6 +77,20 @@ impl Iterator for JoinFilesReader {
     }
 }
 
+pub fn find_parents_exists_dir(dir: &str) -> Option<PathBuf> {
+    match PathBuf::from(".").canonicalize() {
+        Err(_) => None,
+        Ok(mut path) => loop {
+            if path.join(dir).is_dir() {
+                return Some(path);
+            }
+            if !path.pop() {
+                return None;
+            }
+        }
+    }
+}
+
 pub fn locate_file(files: &[String]) -> Option<PathBuf> {
     for f in files {
         match PathBuf::from(&resolve_file_path(f)) {
