@@ -15,11 +15,26 @@ pub mod util_file;
 pub mod util_time;
 
 /// iff!(condition, result_when_true, result_when_false)
-#[macro_export]
-macro_rules! iff {
+#[macro_export] macro_rules! iff {
     ($c:expr, $t:expr, $f:expr) => {
         if $c { $t } else { $f }
     };
+}
+
+#[macro_export] macro_rules! information {
+    ($($arg:tt)+) => ( crate::util_msg::print_info(&format!($($arg)+)); )
+}
+#[macro_export] macro_rules! success {
+    ($($arg:tt)+) => ( crate::util_msg::print_ok(&format!($($arg)+)); )
+}
+#[macro_export] macro_rules! warning {
+    ($($arg:tt)+) => ( crate::util_msg::print_warn(&format!($($arg)+)); )
+}
+#[macro_export] macro_rules! failure {
+    ($($arg:tt)+) => ( crate::util_msg::print_error(&format!($($arg)+)); )
+}
+#[macro_export] macro_rules! debugging {
+    ($($arg:tt)+) => ( crate::util_msg::print_debug(&format!($($arg)+)); )
 }
 
 pub type XResult<T> = Result<T, Box<dyn std::error::Error>>;
