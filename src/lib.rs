@@ -13,6 +13,7 @@ pub mod util_str;
 pub mod util_size;
 pub mod util_file;
 pub mod util_time;
+pub mod util_net;
 
 /// iff!(condition, result_when_true, result_when_false)
 #[macro_export] macro_rules! iff {
