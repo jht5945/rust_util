@@ -9,6 +9,7 @@ rust_util = { git = "https://github.com/jht5945/rust_util" }
 
 Use in `*.rs`:
 ```
+#[macro_use]
 extern crate rust_util;
 
 ...
