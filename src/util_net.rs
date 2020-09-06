@@ -1,3 +1,5 @@
+use std::fmt::{ Display, Formatter };
+use std::result::Result;
 use std::net::SocketAddr;
 use crate::XResult;
 
@@ -21,6 +23,12 @@ impl IpAddress {
         match self {
             IpAddress::Ipv4(self_ipv4_octets) => IpAddressMask::Ipv4(self_ipv4_octets.clone(), 32).is_matches(socket_addr),
         }
+    }
+}
+
+impl Display for IpAddress {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "{}", self.to_address())
     }
 }
 
@@ -69,6 +77,12 @@ impl IpAddressMask {
             },
             SocketAddr::V6(_) => false,
         }
+    }
+}
+
+impl Display for IpAddressMask {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "{}", self.to_address())
     }
 }
 
