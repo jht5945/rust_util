@@ -2,6 +2,29 @@ use std::net::SocketAddr;
 use crate::XResult;
 
 #[derive(Debug, Clone)]
+pub enum IpAddress {
+    Ipv4([u8; 4]),
+}
+
+impl IpAddress {
+    pub fn parse_ipv4(addr: &str) -> Option<Self> {
+        parse_ipv4_addr(addr).map(|parts| IpAddress::Ipv4(parts))
+    }
+
+    pub fn to_address(&self) -> String {
+        match self {
+            IpAddress::Ipv4(ipv4) => ipv4.iter().map(|p| p.to_string()).collect::<Vec<_>>().join("."),
+        }
+    }
+
+    pub fn is_matches(&self, socket_addr: &SocketAddr) -> bool {
+        match self {
+            IpAddress::Ipv4(self_ipv4_octets) => IpAddressMask::Ipv4(self_ipv4_octets.clone(), 32).is_matches(socket_addr),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub enum IpAddressMask {
     Ipv4([u8; 4], u8),
 }
@@ -20,21 +43,7 @@ impl IpAddressMask {
         } else {
             return None;
         };
-        let addr_parts = addr_ip.split('.').collect::<Vec<_>>();
-        if addr_parts.len() != 4 {
-            return None;
-        }
-        let parsed_addr = || -> XResult<[u8; 4]> {
-            Ok([addr_parts[0].parse::<u8>()?,
-                addr_parts[1].parse::<u8>()?,
-                addr_parts[2].parse::<u8>()?,
-                addr_parts[3].parse::<u8>()?
-            ])
-        };
-        match parsed_addr() {
-            Ok(parts) => Some(IpAddressMask::Ipv4(parts, mask)),
-            Err(_) => None,
-        }
+        parse_ipv4_addr(addr_ip).map(|parts| IpAddressMask::Ipv4(parts, mask))
     }
 
     pub fn to_address(&self) -> String {
@@ -79,6 +88,20 @@ fn ipv4_to_u32(ipv4: &[u8; 4]) -> u32 {
     ((ipv4[0] as u32) << (8 * 3)) + ((ipv4[1] as u32) << (8 * 2)) + ((ipv4[2] as u32) << 8) + (ipv4[3] as u32)
 }
 
+fn parse_ipv4_addr(addr: &str) -> Option<[u8; 4]>  {
+    let addr_parts = addr.split('.').collect::<Vec<_>>();
+    if addr_parts.len() != 4 {
+        return None;
+    }
+    let parsed_addr = || -> XResult<[u8; 4]> {
+        Ok([addr_parts[0].parse::<u8>()?,
+            addr_parts[1].parse::<u8>()?,
+            addr_parts[2].parse::<u8>()?,
+            addr_parts[3].parse::<u8>()?
+        ])
+    };
+    parsed_addr().ok()
+}
 
 #[test]
 fn test_is_matches() {
