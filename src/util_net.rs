@@ -3,6 +3,8 @@ use std::result::Result;
 use std::net::SocketAddr;
 use crate::XResult;
 
+const DEFAULT_LISTEN_ADDR: [u8; 4] = [127, 0, 0, 1];
+
 #[derive(Debug, Clone)]
 pub enum IpAddress {
     Ipv4([u8; 4]),
@@ -86,6 +88,60 @@ impl Display for IpAddressMask {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct IpAddressAndPort {
+    pub ip: IpAddress,
+    pub port: u16,
+}
+
+impl IpAddressAndPort {
+    pub fn parse(ip_address_and_port: &str) -> Option<Self> {
+        if let Some((ipv4, port)) = parse_ip_and_port(ip_address_and_port) {
+            return Some(IpAddressAndPort {
+                ip: IpAddress::Ipv4(ipv4),
+                port,
+            });
+        }
+        None
+    }
+
+    pub fn to_address(&self) -> String {
+        format!("{}:{}", self.ip, self.port)
+    }
+
+    pub fn to_ipv4_and_port(&self) -> ([u8; 4], u16) {
+        match self.ip {
+            IpAddress::Ipv4(ipv4) => (ipv4, self.port),
+        }
+    }
+}
+
+impl Display for IpAddressAndPort {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "{}:{}", self.ip, self.port)
+    }
+}
+
+// :8080 -> 127.0.0.1:8080
+fn parse_ip_and_port(listen: &str) -> Option<([u8; 4], u16)> {
+    let listen_addr = match listen.split(':').next() {
+        None => DEFAULT_LISTEN_ADDR,
+        Some(addr) if addr.is_empty() => DEFAULT_LISTEN_ADDR,
+        Some(addr) => match parse_ipv4_addr(addr) {
+            Some(parsed_ip_address) => parsed_ip_address, None => return None,
+        },
+    };
+
+    let listen_port = match listen.split(':').nth(1) {
+        None => return None,
+        Some(port) => match port.parse::<u16>() {
+            Ok(port) => port, Err(_) => return None,
+        },
+    };
+
+    Some((listen_addr, listen_port))
+}
+
 fn ipv4_mask(mask: u8) -> u32 {
     let mut r = 0_u32;
     for _ in 0..mask {
@@ -118,15 +174,25 @@ fn parse_ipv4_addr(addr: &str) -> Option<[u8; 4]>  {
 }
 
 #[test]
-fn test_is_matches() {
+fn test_ip_address_is_matches() {
     let addr = SocketAddr::new(std::net::IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 1)), 123);
     let addr2 = SocketAddr::new(std::net::IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 2)), 123);
-   assert_eq!(true, IpAddressMask::parse_ipv4("127.0.0.1").unwrap().is_matches(&addr));
-   assert_eq!(true, IpAddressMask::parse_ipv4("127.0.0.1/32").unwrap().is_matches(&addr));
-   assert_eq!(true, IpAddressMask::parse_ipv4("127.0.0.1/31").unwrap().is_matches(&addr));
-   assert_eq!(true, IpAddressMask::parse_ipv4("127.0.0.1/30").unwrap().is_matches(&addr));
-   assert_eq!(false, IpAddressMask::parse_ipv4("127.0.0.1").unwrap().is_matches(&addr2));
-   assert_eq!(false, IpAddressMask::parse_ipv4("127.0.0.1/32").unwrap().is_matches(&addr2));
-   assert_eq!(false, IpAddressMask::parse_ipv4("127.0.0.1/31").unwrap().is_matches(&addr2));
-   assert_eq!(true, IpAddressMask::parse_ipv4("127.0.0.1/30").unwrap().is_matches(&addr2));
+    assert_eq!(true, IpAddressMask::parse_ipv4("127.0.0.1").unwrap().is_matches(&addr));
+    assert_eq!(true, IpAddressMask::parse_ipv4("127.0.0.1/32").unwrap().is_matches(&addr));
+    assert_eq!(true, IpAddressMask::parse_ipv4("127.0.0.1/31").unwrap().is_matches(&addr));
+    assert_eq!(true, IpAddressMask::parse_ipv4("127.0.0.1/30").unwrap().is_matches(&addr));
+    assert_eq!(false, IpAddressMask::parse_ipv4("127.0.0.1").unwrap().is_matches(&addr2));
+    assert_eq!(false, IpAddressMask::parse_ipv4("127.0.0.1/32").unwrap().is_matches(&addr2));
+    assert_eq!(false, IpAddressMask::parse_ipv4("127.0.0.1/31").unwrap().is_matches(&addr2));
+    assert_eq!(true, IpAddressMask::parse_ipv4("127.0.0.1/30").unwrap().is_matches(&addr2));
+}
+
+#[test]
+fn test_ip_address_port() {
+    let ip_address_and_port = IpAddressAndPort::parse(":80");
+    assert_eq!("127.0.0.1:80", format!("{}", ip_address_and_port.unwrap()));
+    let ip_address_and_port = IpAddressAndPort::parse("0.0.0.0:80");
+    assert_eq!("0.0.0.0:80", format!("{}", ip_address_and_port.unwrap()));
+    let ip_address_and_port = IpAddressAndPort::parse("1.1.1.1:80");
+    assert_eq!("1.1.1.1:80", format!("{}", ip_address_and_port.unwrap()));
 }
