@@ -118,6 +118,26 @@ pub fn find_parents_exists_dir(dir: &str) -> Option<PathBuf> {
     }
 }
 
+#[cfg(feature = "use_serde")]
+pub fn read_json_config<T>(config: Option<String>, files: &[String]) -> XResult<Option<(PathBuf, T)>> {
+    let config_path_buf_opt = read_config(config, files);
+    match config_path_buf_opt {
+        None => Ok(None),
+        Some(config_path_buf) => {
+            information!("Read config: {}", config_path_buf);
+            let config_content = fs::read_to_string(config_path_buf)?;
+            Ok(Some((config_path_buf, serde_json::from_str(&config_content)?)))
+        }
+    }
+}
+
+pub fn read_config(config: Option<String>, files: &[String]) -> Option<PathBuf> {
+    match config {
+        Some(config_str) => Some(PathBuf::from(config_str)),
+        None => locate_file(files),
+    }
+}
+
 pub fn locate_file(files: &[String]) -> Option<PathBuf> {
     for f in files {
         match PathBuf::from(&resolve_file_path(f)) {

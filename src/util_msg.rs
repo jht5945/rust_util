@@ -1,15 +1,47 @@
 use std::{
+    env,
     io::{ self, Write },
     sync::{ Arc, Mutex },
 };
 
 lazy_static! {
     pub static ref IS_ATTY: bool = is_atty();
+    static ref LOGGER_LEVEL: MessageType = get_logger_level();
     static ref PRINT_MESSAGE_LOCK: Arc<Mutex<()>> = Arc::new(Mutex::new(()));
 }
 
 #[derive(Clone, Copy)]
-pub enum MessageType { INFO, OK, WARN, ERROR, DEBUG, }
+pub enum MessageType { DEBUG, INFO, OK, WARN, ERROR, }
+
+impl MessageType {
+    pub fn get_u8_value(&self) -> u8 {
+        match self {
+            MessageType::DEBUG => 0,
+            MessageType::INFO  => 1,
+            MessageType::OK    => 2,
+            MessageType::WARN  => 3,
+            MessageType::ERROR => 4,
+        }
+    }
+}
+
+pub fn get_logger_level() -> MessageType {
+    if let Some(logger_level) = env::var("LOGGER_LEVEL").ok().or(env::var("LOGGER").ok()).or(env::var("LEVEL").ok()) {
+        match logger_level.trim().to_lowercase().as_str() {
+            "debug" => MessageType::DEBUG,
+            "info" => MessageType::INFO,
+            "ok" => MessageType::OK,
+            "warn" => MessageType::WARN,
+            "error" => MessageType::ERROR,
+            _ => {
+                print_message_ex(Some(term::color::YELLOW), "[WARN ]", &format!("Unknown logger level: {}, set to default INFO", logger_level));
+                MessageType::INFO
+            },
+        }
+    } else {
+        MessageType::INFO
+    }
+}
 
 pub fn is_atty() -> bool {
     let stdout_fileno = unsafe { libc::isatty(libc::STDOUT_FILENO as i32) };
@@ -55,12 +87,15 @@ pub fn print_info (message: &str) { print_message(MessageType::INFO,  message); 
 pub fn print_debug(message: &str) { print_message(MessageType::DEBUG, message); }
 
 pub fn print_message(mt: MessageType, message: &str) {
-    match mt {
-        MessageType::OK    => print_message_ex(Some(term::color::GREEN),   "[OK   ]", message),
-        MessageType::WARN  => print_message_ex(Some(term::color::YELLOW),  "[WARN ]", message),
-        MessageType::ERROR => print_message_ex(Some(term::color::RED),     "[ERROR]", message),
-        MessageType::INFO  => print_message_ex(None,                       "[INFO ]", message),
-        MessageType::DEBUG => print_message_ex(Some(term::color::MAGENTA), "[DEBUG]", message),
+    let logger_level = *LOGGER_LEVEL;
+    if mt.get_u8_value() >= logger_level.get_u8_value() {
+        match mt {
+            MessageType::OK    => print_message_ex(Some(term::color::GREEN),   "[OK   ]", message),
+            MessageType::WARN  => print_message_ex(Some(term::color::YELLOW),  "[WARN ]", message),
+            MessageType::ERROR => print_message_ex(Some(term::color::RED),     "[ERROR]", message),
+            MessageType::INFO  => print_message_ex(None,                       "[INFO ]", message),
+            MessageType::DEBUG => print_message_ex(Some(term::color::MAGENTA), "[DEBUG]", message),
+        }
     }
 }
 
