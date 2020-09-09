@@ -1,11 +1,9 @@
-
 use std::{
     env,
     fs::{ self, File },
     io::{ Lines, BufReader },
     path::{ Path, PathBuf },
 };
-
 use crate::{
     iff,
     util_os,
@@ -114,18 +112,6 @@ pub fn find_parents_exists_dir(dir: &str) -> Option<PathBuf> {
             if !path.pop() {
                 return None;
             }
-        }
-    }
-}
-
-#[cfg(feature = "use_serde")]
-pub fn read_json_config<T>(config: Option<String>, files: &[String]) -> XResult<Option<(PathBuf, T)>> where T: serde::de::DeserializeOwned {
-    let config_path_buf_opt = read_config(config, files);
-    match config_path_buf_opt {
-        None => Ok(None),
-        Some(config_path_buf) => {
-            let json_config: T = serde_json::from_reader(std::fs::File::open(&config_path_buf)?)?;
-            Ok(Some((config_path_buf, json_config)))
         }
     }
 }
