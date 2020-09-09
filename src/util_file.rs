@@ -124,7 +124,7 @@ pub fn read_json_config<T>(config: Option<String>, files: &[String]) -> XResult<
     match config_path_buf_opt {
         None => Ok(None),
         Some(config_path_buf) => {
-            information!("Read config: {}", config_path_buf);
+            // information!("Read config: {}", config_path_buf);
             let config_content = fs::read_to_string(config_path_buf)?;
             Ok(Some((config_path_buf, serde_json::from_str(&config_content)?)))
         }
