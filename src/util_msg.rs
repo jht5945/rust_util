@@ -28,11 +28,11 @@ impl MessageType {
 pub fn get_logger_level() -> MessageType {
     if let Some(logger_level) = env::var("LOGGER_LEVEL").ok().or(env::var("LOGGER").ok()).or(env::var("LEVEL").ok()) {
         match logger_level.trim().to_lowercase().as_str() {
-            "debug" | "*"  => MessageType::DEBUG,
-            "info"  | "?"  => MessageType::INFO,
-            "ok"           => MessageType::OK,
-            "warn"  | "!"  => MessageType::WARN,
-            "error" | "!!" => MessageType::ERROR,
+            "debug" | "*" => MessageType::DEBUG,
+            "info"  | "?" => MessageType::INFO,
+            "ok"          => MessageType::OK,
+            "warn"  | "!" => MessageType::WARN,
+            "error" | "^" => MessageType::ERROR,
             _ => {
                 print_message_ex(Some(term::color::YELLOW), "[WARN ]", &format!("Unknown logger level: {}, set to default INFO", logger_level));
                 MessageType::INFO
