@@ -89,6 +89,41 @@ impl Display for IpAddressMask {
 }
 
 #[derive(Debug, Clone)]
+pub struct IpAddressMaskGroup {
+    pub ip_address_mask_group: Vec<IpAddressMask>,
+}
+
+impl IpAddressMaskGroup {
+    pub fn parse(ip_mask_group: &[String]) -> Self {
+        let mut ret = vec![];
+        for ip_mask_addr in ip_mask_group {
+            if let Some(ip_mask) = IpAddressMask::parse_ipv4(ip_mask_addr) {
+                ret.push(ip_mask);
+            }
+        }
+        Self { ip_address_mask_group: ret }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.ip_address_mask_group.is_empty()
+    }
+
+    pub fn is_matches(&self, socket_addr: &SocketAddr) -> bool {
+        self.ip_address_mask_group.iter().any(|ip_address_mask| ip_address_mask.is_matches(socket_addr))
+    }
+
+    pub fn is_empty_or_matches(&self, socket_addr: &SocketAddr) -> bool {
+        self.is_empty() || self.is_matches(socket_addr)
+    }
+}
+
+impl Display for IpAddressMaskGroup {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "[{}]", self.ip_address_mask_group.iter().map(|i| format!("{}", i)).collect::<Vec<_>>().join(", "))
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct IpAddressAndPort {
     pub ip: IpAddress,
     pub port: u16,
@@ -195,4 +230,17 @@ fn test_ip_address_port() {
     assert_eq!("0.0.0.0:80", format!("{}", ip_address_and_port.unwrap()));
     let ip_address_and_port = IpAddressAndPort::parse("1.1.1.1:80");
     assert_eq!("1.1.1.1:80", format!("{}", ip_address_and_port.unwrap()));
+}
+
+#[test]
+fn test_ip_address_mask_group_is_matches() {
+    let group = IpAddressMaskGroup::parse(&vec!["127.0.0.1".to_owned(), "10.0.0.0/24".to_owned()]);
+    let addr = SocketAddr::new(std::net::IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 1)), 123);
+    assert_eq!(true, group.is_matches(&addr));
+    let addr = SocketAddr::new(std::net::IpAddr::V4(std::net::Ipv4Addr::new(127, 0, 0, 2)), 123);
+    assert_eq!(false, group.is_matches(&addr));
+    let addr = SocketAddr::new(std::net::IpAddr::V4(std::net::Ipv4Addr::new(10, 0, 0, 2)), 123);
+    assert_eq!(true, group.is_matches(&addr));
+    let addr = SocketAddr::new(std::net::IpAddr::V4(std::net::Ipv4Addr::new(10, 0, 1, 2)), 123);
+    assert_eq!(false, group.is_matches(&addr));
 }
