@@ -86,9 +86,14 @@ pub fn print_error(message: &str) { print_message(MessageType::ERROR, message); 
 pub fn print_info (message: &str) { print_message(MessageType::INFO,  message); }
 pub fn print_debug(message: &str) { print_message(MessageType::DEBUG, message); }
 
-pub fn print_message(mt: MessageType, message: &str) {
+#[inline]
+pub fn is_logger_level_enabled(mt: MessageType) -> bool {
     let logger_level = *LOGGER_LEVEL;
-    if mt.get_u8_value() >= logger_level.get_u8_value() {
+    mt.get_u8_value() >= logger_level.get_u8_value()
+}
+
+pub fn print_message(mt: MessageType, message: &str) {
+    if is_logger_level_enabled(mt) {
         match mt {
             MessageType::OK    => print_message_ex(Some(term::color::GREEN),   "[OK   ]", message),
             MessageType::WARN  => print_message_ex(Some(term::color::YELLOW),  "[WARN ]", message),
