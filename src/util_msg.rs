@@ -1,8 +1,4 @@
-use std::{
-    env,
-    io::{ self, Write },
-    sync::{ Arc, Mutex },
-};
+use std::{ env, io::{ self, Write }, sync::{ Arc, Mutex } };
 
 lazy_static! {
     pub static ref IS_ATTY: bool = is_atty();
@@ -11,7 +7,7 @@ lazy_static! {
 }
 
 #[derive(Clone, Copy)]
-pub enum MessageType { DEBUG, INFO, OK, WARN, ERROR, }
+pub enum MessageType { DEBUG, INFO, OK, WARN, ERROR }
 
 impl MessageType {
     pub fn get_u8_value(&self) -> u8 {
@@ -30,7 +26,7 @@ pub fn get_logger_level() -> MessageType {
         match logger_level.trim().to_lowercase().as_str() {
             "debug" | "*" => MessageType::DEBUG,
             "info"  | "?" => MessageType::INFO,
-            "ok"          => MessageType::OK,
+            "ok"    | "#" => MessageType::OK,
             "warn"  | "!" => MessageType::WARN,
             "error" | "^" => MessageType::ERROR,
             _ => {

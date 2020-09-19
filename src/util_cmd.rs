@@ -1,7 +1,4 @@
-use std::{
-    io::{ self, Error, ErrorKind },
-    process::Command,
-};
+use std::{ io::{ self, Error, ErrorKind }, process::Command };
 
 pub fn run_command_and_wait(cmd: &mut Command) -> io::Result<()> {
     cmd.spawn()?.wait()?;

@@ -1,4 +1,4 @@
-use std::fmt::{ Display, Formatter };
+use std::fmt::{ self, Display, Formatter };
 use std::result::Result;
 use std::net::SocketAddr;
 use crate::XResult;
@@ -29,7 +29,7 @@ impl IpAddress {
 }
 
 impl Display for IpAddress {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), fmt::Error> {
         write!(f, "{}", self.to_address())
     }
 }
@@ -83,7 +83,7 @@ impl IpAddressMask {
 }
 
 impl Display for IpAddressMask {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), fmt::Error> {
         write!(f, "{}", self.to_address())
     }
 }
@@ -118,7 +118,7 @@ impl IpAddressMaskGroup {
 }
 
 impl Display for IpAddressMaskGroup {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), fmt::Error> {
         write!(f, "[{}]", self.ip_address_mask_group.iter().map(|i| format!("{}", i)).collect::<Vec<_>>().join(", "))
     }
 }
@@ -152,7 +152,7 @@ impl IpAddressAndPort {
 }
 
 impl Display for IpAddressAndPort {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), fmt::Error> {
         write!(f, "{}:{}", self.ip, self.port)
     }
 }

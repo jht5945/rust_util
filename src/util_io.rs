@@ -4,7 +4,7 @@ use std::{
     time::{ SystemTime, Duration },
 };
 
-use super::{ XResult, new_box_ioerror, };
+use super::{ XResult, new_box_ioerror };
 use super::util_size::get_display_size;
 use super::util_msg::print_lastline;
 use super::util_file::resolve_file_path;
