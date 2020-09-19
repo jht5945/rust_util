@@ -4,19 +4,48 @@ use std::{
     time::{ SystemTime, Duration },
 };
 
-use super::{ XResult, new_box_ioerror };
-use super::util_size::get_display_size;
-use super::util_msg::print_lastline;
-use super::util_file::resolve_file_path;
+use crate::{ XResult, new_box_ioerror };
+use crate::util_size;
+use crate::util_msg;
+use crate::util_file;
+use crate::util_time;
 
 pub const DEFAULT_BUF_SIZE: usize = 8 * 1024;
 
+// TODO add to print status line
+pub struct PrintStatusContext {
+    pub print_interval_time: Duration,
+    pub print_interval_bytes: usize,
+    pub last_print_time: u128,
+    pub last_print_bytes: usize,
+}
+
+impl PrintStatusContext {
+    pub fn new() -> Self {
+        Self::new_with(Duration::from_millis(100), 512 * 1024)
+    }
+
+    pub fn new_with(print_interval_time: Duration, print_interval_bytes: usize) -> Self {
+        Self {
+            print_interval_time,
+            print_interval_bytes,
+            last_print_time: util_time::get_current_millis(),
+            last_print_bytes: 0,
+        }
+    }
+}
+
+impl Default for PrintStatusContext {
+    fn default() -> Self {
+        PrintStatusContext::new()
+    }
+}
 
 pub fn get_read_stdin_or_file(file: &str) -> XResult<Box<dyn Read>> {
     if file.is_empty() {
         Ok(Box::new(io::stdin()))
     } else {
-        match File::open(&resolve_file_path(file)) {
+        match File::open(&util_file::resolve_file_path(file)) {
             Ok(f) => Ok(Box::new(f)),
             Err(err) => Err(new_box_ioerror(&format!("Open file {}, erorr: {}", file, err))),
         }
@@ -38,26 +67,6 @@ pub fn read_to_bytes(read: &mut dyn Read) -> XResult<Vec<u8>> {
 pub fn copy_io<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64) -> io::Result<u64>
         where R: io::Read, W: io::Write {
     copy_io_with_head(reader, writer, total, "Downloading")
-}
-
-pub fn print_status_last_line(head: &str, total: i64, written: i64, cost: Duration) {
-    let mut download_speed = "-".to_string();
-    let cost_as_secs = cost.as_secs();
-    if cost_as_secs > 0 {
-        download_speed = format!("{}/s", get_display_size((written / (cost_as_secs as i64)) as i64));
-    }
-    if total > 0 {
-        print_lastline(&format!("{}, Total: {}, Finished: {}, Speed: {}",
-            head,
-            get_display_size(total),
-            get_display_size(written),
-            download_speed));
-    } else {
-        print_lastline(&format!("{}, Finished: {}, Speed: {}",
-            head,
-            get_display_size(written),
-            download_speed));
-    }
 }
 
 pub fn copy_io_with_head<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64, head: &str) -> io::Result<u64>
@@ -87,5 +96,25 @@ pub fn copy_io_callback<R: ?Sized, W: ?Sized, FCallback>(reader: &mut R, writer:
         writer.write_all(&buf[..len])?;
         written += len as u64;
         callback(total, written, len);
+    }
+}
+
+pub fn print_status_last_line(head: &str, total: i64, written: i64, cost: Duration) {
+    let mut download_speed = "-".to_string();
+    let cost_as_secs = cost.as_secs();
+    if cost_as_secs > 0 {
+        download_speed = format!("{}/s", util_size::get_display_size((written / (cost_as_secs as i64)) as i64));
+    }
+    if total > 0 {
+        util_msg::print_lastline(&format!("{}, Total: {}, Finished: {}, Speed: {}",
+            head,
+            util_size::get_display_size(total),
+            util_size::get_display_size(written),
+            download_speed));
+    } else {
+        util_msg::print_lastline(&format!("{}, Finished: {}, Speed: {}",
+            head,
+            util_size::get_display_size(written),
+            download_speed));
     }
 }

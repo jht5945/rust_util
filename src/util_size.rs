@@ -1,4 +1,4 @@
-use super::XResult;
+use crate::XResult;
 
 pub const SIZE_KB: i64 = 1024;
 pub const SIZE_MB: i64 = SIZE_KB * SIZE_KB;
