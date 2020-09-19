@@ -190,7 +190,8 @@ fn ipv4_mask(mask: u8) -> u32 {
 }
 
 fn ipv4_to_u32(ipv4: &[u8; 4]) -> u32 {
-    ((ipv4[0] as u32) << (8 * 3)) + ((ipv4[1] as u32) << (8 * 2)) + ((ipv4[2] as u32) << 8) + (ipv4[3] as u32)
+    u32::from_be_bytes(*ipv4)
+    // ((ipv4[0] as u32) << (8 * 3)) + ((ipv4[1] as u32) << (8 * 2)) + ((ipv4[2] as u32) << 8) + (ipv4[3] as u32)
 }
 
 fn parse_ipv4_addr(addr: &str) -> Option<[u8; 4]>  {
