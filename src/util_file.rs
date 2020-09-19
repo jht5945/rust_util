@@ -26,11 +26,7 @@ impl JoinFilesReader {
         if !files.is_empty() {
             file_lines = Some(Box::new(open_file_as_lines(&files[0])?));
         }
-        Ok(Self {
-            files,
-            file_ptr,
-            file_lines,
-        })
+        Ok(Self { files, file_ptr, file_lines })
     }
 }
 

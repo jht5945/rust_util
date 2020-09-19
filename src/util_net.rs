@@ -12,7 +12,7 @@ pub enum IpAddress {
 
 impl IpAddress {
     pub fn parse_ipv4(addr: &str) -> Option<Self> {
-        parse_ipv4_addr(addr).map(|parts| IpAddress::Ipv4(parts))
+        parse_ipv4_addr(addr).map(IpAddress::Ipv4)
     }
 
     pub fn to_address(&self) -> String {
@@ -23,7 +23,7 @@ impl IpAddress {
 
     pub fn is_matches(&self, socket_addr: &SocketAddr) -> bool {
         match self {
-            IpAddress::Ipv4(self_ipv4_octets) => IpAddressMask::Ipv4(self_ipv4_octets.clone(), 32).is_matches(socket_addr),
+            IpAddress::Ipv4(self_ipv4_octets) => IpAddressMask::Ipv4(*self_ipv4_octets, 32).is_matches(socket_addr),
         }
     }
 }

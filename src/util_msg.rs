@@ -22,7 +22,9 @@ impl MessageType {
 }
 
 pub fn get_logger_level() -> MessageType {
-    if let Some(logger_level) = env::var("LOGGER_LEVEL").ok().or(env::var("LOGGER").ok()).or(env::var("LEVEL").ok()) {
+    if let Some(logger_level) = env::var("LOGGER_LEVEL").ok()
+                                                        .or_else(|| env::var("LOGGER").ok())
+                                                        .or_else(|| env::var("LEVEL").ok()) {
         match logger_level.trim().to_lowercase().as_str() {
             "debug" | "*" => MessageType::DEBUG,
             "info"  | "?" => MessageType::INFO,
