@@ -22,6 +22,11 @@ Update git crate:
 $ cargo update
 ```
 
+Run example:
+```
+$ cargo run --example log
+```
+
 
 ## Update Log
 
