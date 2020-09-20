@@ -8,16 +8,15 @@ use crate::{ XResult, new_box_ioerror };
 use crate::util_size;
 use crate::util_msg;
 use crate::util_file;
-use crate::util_time;
 
 pub const DEFAULT_BUF_SIZE: usize = 8 * 1024;
 
-// TODO add to print status line
 pub struct PrintStatusContext {
     pub print_interval_time: Duration,
-    pub print_interval_bytes: usize,
-    pub last_print_time: u128,
-    pub last_print_bytes: usize,
+    pub print_interval_bytes: i64,
+    pub init_print_time: SystemTime,
+    pub last_print_time: SystemTime,
+    pub total_written_bytes: i64,
 }
 
 impl PrintStatusContext {
@@ -25,12 +24,38 @@ impl PrintStatusContext {
         Self::new_with(Duration::from_millis(100), 512 * 1024)
     }
 
-    pub fn new_with(print_interval_time: Duration, print_interval_bytes: usize) -> Self {
+    pub fn new_with(print_interval_time: Duration, print_interval_bytes: i64) -> Self {
         Self {
             print_interval_time,
             print_interval_bytes,
-            last_print_time: util_time::get_current_millis(),
-            last_print_bytes: 0,
+            init_print_time: SystemTime::now(),
+            last_print_time: SystemTime::now(),
+            total_written_bytes: 0,
+        }
+    }
+
+    pub fn check_print(&mut self, total: i64, written: i64) -> (bool, Duration) {
+        let now = SystemTime::now();
+        let total_cost = now.duration_since(self.init_print_time).unwrap_or_else(|_| Duration::from_millis(0));
+        let last_print_cost = now.duration_since(self.last_print_time).unwrap_or_else(|_| Duration::from_millis(0));
+        let should_update_status_line = || {
+            if total > written && (total - written < self.print_interval_bytes) {
+                return true;
+            }
+            if written > self.total_written_bytes && (written - self.total_written_bytes > self.print_interval_bytes) {
+                return true;
+            }
+            match last_print_cost.as_millis() {
+                m if m > self.print_interval_time.as_millis() => true,
+                _ => false,
+            }
+        };
+        if should_update_status_line() {
+            self.last_print_time = now;
+            self.total_written_bytes = written;
+            (true, total_cost)
+        } else {
+            (false, total_cost)
         }
     }
 }
@@ -64,26 +89,30 @@ pub fn read_to_bytes(read: &mut dyn Read) -> XResult<Vec<u8>> {
     Ok(buffer)
 }
 
-pub fn copy_io<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64) -> io::Result<u64>
+pub fn copy_io_default<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64) -> io::Result<u64>
         where R: io::Read, W: io::Write {
-    copy_io_with_head(reader, writer, total, "Downloading")
+    copy_io_with_head(reader, writer, total, "Downloading", &mut PrintStatusContext::default())
 }
 
-pub fn copy_io_with_head<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64, head: &str) -> io::Result<u64>
+pub fn copy_io<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64, print_status_context: &mut PrintStatusContext)
+        -> io::Result<u64>
         where R: io::Read, W: io::Write {
-    let start = SystemTime::now();
-    let written = copy_io_callback(reader, writer, total, &|total, written, _len| {
-        let cost = SystemTime::now().duration_since(start).unwrap();
-        print_status_last_line(head, total, written as i64, cost);
+    copy_io_with_head(reader, writer, total, "Downloading", print_status_context)
+}
+
+pub fn copy_io_with_head<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64, head: &str, print_status_context: &mut PrintStatusContext) -> io::Result<u64>
+        where R: io::Read, W: io::Write {
+    let written = copy_io_callback(reader, writer, total, print_status_context, &mut |total, written, _len, print_status_context| {
+        print_status_last_line(head, total, written as i64, print_status_context);
     });
     println!();
     written
 }
 
-pub fn copy_io_callback<R: ?Sized, W: ?Sized, FCallback>(reader: &mut R, writer: &mut W, total: i64, callback: &FCallback) -> io::Result<u64>
+pub fn copy_io_callback<R: ?Sized, W: ?Sized, FCallback>(reader: &mut R, writer: &mut W, total: i64, print_status_context: &mut PrintStatusContext, callback: &mut FCallback) -> io::Result<u64>
         where R: io::Read,
               W: io::Write,
-              FCallback: Fn(i64, u64, usize) {
+              FCallback: Fn(i64, u64, usize, &mut PrintStatusContext) {
     let mut written = 0u64;
     let mut buf: [u8; DEFAULT_BUF_SIZE] = [0u8; DEFAULT_BUF_SIZE];
     loop {
@@ -95,12 +124,16 @@ pub fn copy_io_callback<R: ?Sized, W: ?Sized, FCallback>(reader: &mut R, writer:
         };
         writer.write_all(&buf[..len])?;
         written += len as u64;
-        callback(total, written, len);
+        callback(total, written, len, print_status_context);
     }
 }
 
-pub fn print_status_last_line(head: &str, total: i64, written: i64, cost: Duration) {
+pub fn print_status_last_line(head: &str, total: i64, written: i64, print_status_context: &mut PrintStatusContext) {
     let mut download_speed = "-".to_string();
+    let (is_print, cost) = print_status_context.check_print(total, written);
+    if !is_print {
+        return;
+    }
     let cost_as_secs = cost.as_secs();
     if cost_as_secs > 0 {
         download_speed = format!("{}/s", util_size::get_display_size((written / (cost_as_secs as i64)) as i64));
