@@ -1,8 +1,5 @@
-use std::{
-    fs::File,
-    io::{ self, ErrorKind, prelude::* },
-    time::{ SystemTime, Duration },
-};
+use std::{ fs::File, io::{ self, ErrorKind, prelude::* } };
+use std::time::{ SystemTime, Duration };
 
 use crate::{ XResult, new_box_ioerror };
 use crate::util_size;

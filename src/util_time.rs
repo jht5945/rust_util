@@ -26,6 +26,16 @@ pub fn parse_duration(t: &str) -> Option<Duration> {
 }
 
 #[test]
+fn test_get_current_secs() {
+    assert!(get_current_secs() != 0);
+}
+
+#[test]
+fn test_get_current_millis() {
+    assert!(get_current_millis() != 0);
+}
+
+#[test]
 fn test_parse_duration() {
     assert_eq!(None, parse_duration(""));
     assert_eq!(None, parse_duration("X"));
