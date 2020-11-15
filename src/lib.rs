@@ -34,6 +34,11 @@ pub mod util_net;
 #[macro_export] macro_rules! debugging {
     ($($arg:tt)+) => ( rust_util::util_msg::print_debug(&format!($($arg)+)); )
 }
+#[macro_export] macro_rules! opt_value {
+    ($e: expr) => {
+        match $e { Some(o) => o, None => return, }
+    }
+}
 
 pub type XResult<T> = Result<T, Box<dyn std::error::Error>>;
 
