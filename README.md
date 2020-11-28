@@ -30,6 +30,8 @@ $ cargo run --example log
 
 ## Update Log
 
+* Nov 28, 2020 v0.6.18
+    * add util_term
 * Jun 21, 2020 v0.3.0
     * add struct `JoinFilesReader`
 
