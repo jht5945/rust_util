@@ -10,6 +10,7 @@ const EN_US: &str = "en_US";
 pub struct GitStatusChange {
     pub added: Vec<String>,
     pub modified: Vec<String>,
+    pub renamed: Vec<(String, String)>,
     pub deleted: Vec<String>,
     pub untracked: Vec<String>,
 }
@@ -93,6 +94,14 @@ fn parse_git_status_change(git_status: &str) -> XResult<GitStatusChange> {
             } else if ln.starts_with("modified:") {
                 let f = ln["modified:".len()..].trim();
                 git_status_change.modified.push(f.to_owned());
+            } else if ln.starts_with("renamed:") {
+                let f = ln["renamed:".len()..].trim();
+                let mut fs = f.split("->");
+                let fa = fs.next();
+                let fb = fs.next();
+                if let (Some(fa), Some(fb)) = (fa, fb) {
+                    git_status_change.renamed.push((fa.trim().to_owned(), fb.trim().to_owned()));
+                }
             } else {
                 git_status_change.untracked.push(ln.to_owned());
             }
@@ -120,6 +129,7 @@ Changes to be committed:
   (use "git reset HEAD <file>..." to unstage)
 
 	new file:   src/util_git.rs
+	renamed:    src/template_regex.rs -> src/chk_regex.rs
 
 Changes not staged for commit:
   (use "git add/rm <file>..." to update what will be committed)
@@ -140,6 +150,8 @@ H"#;
     assert_eq!("src/util_git.rs", gsc.added[0]);
     assert_eq!(1, gsc.modified.len());
     assert_eq!("src/lib.rs", gsc.modified[0]);
+    assert_eq!(1, gsc.renamed.len());
+    assert_eq!(("src/template_regex.rs".into(), "src/chk_regex.rs".into()), gsc.renamed[0]);
     assert_eq!(1, gsc.deleted.len());
     assert_eq!("README.md", gsc.deleted[0]);
     assert_eq!(1, gsc.untracked.len());
