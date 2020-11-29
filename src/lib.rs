@@ -15,6 +15,7 @@ pub mod util_file;
 pub mod util_time;
 pub mod util_net;
 pub mod util_term;
+pub mod util_git;
 
 /// iff!(condition, result_when_true, result_when_false)
 #[macro_export] macro_rules! iff {
