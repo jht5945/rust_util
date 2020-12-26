@@ -1,11 +1,11 @@
-use std::{ io::{ self, Error, ErrorKind }, process::Command };
+use std::io::{self, Error, ErrorKind};
+use std::process::{Command, ExitStatus};
 
-pub fn run_command_and_wait(cmd: &mut Command) -> io::Result<()> {
-    cmd.spawn()?.wait()?;
-    Ok(())
+pub fn run_command_and_wait(cmd: &mut Command) -> io::Result<ExitStatus> {
+    cmd.spawn()?.wait()
 }
 
-pub fn extract_package_and_wait(dir: &str, file_name: &str) -> io::Result<()> {
+pub fn extract_package_and_wait(dir: &str, file_name: &str) -> io::Result<ExitStatus> {
     let mut cmd: Command;
     if file_name.ends_with(".zip") {
         cmd = Command::new("unzip");
