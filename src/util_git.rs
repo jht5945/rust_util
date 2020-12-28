@@ -45,6 +45,16 @@ pub fn git_status(working_dir: Option<&str>) -> XResult<String> {
     Ok(git_status)
 }
 
+pub fn git_branch(working_dir: Option<&str>) -> XResult<Option<String>> {
+    let mut cmd = new_git_command(working_dir);
+    cmd.arg("branch");
+    util_msg::print_info(&format!("Exec: {:?}", cmd));
+    let output = cmd.output()?;
+    let git_branch = String::from_utf8(output.stdout)?;
+    let current_branch = git_branch.lines().find(|ln| ln.trim().starts_with("*"));
+    Ok(current_branch.map(|ln| ln.trim()[1..].trim().into()))
+}
+
 pub fn git_push(working_dir: Option<&str>) {
     let mut cmd = new_git_command(working_dir);
     cmd.arg("push");
