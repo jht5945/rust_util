@@ -60,6 +60,15 @@ impl Iterator for JoinFilesReader {
     }
 }
 
+pub fn join_path(path1: &str, path2: &str) -> String {
+    let sp = if util_os::is_macos_or_linux() { "/" } else { "\\" };
+    if path1.ends_with(sp) {
+        path1.to_string() + path2
+    } else {
+        path1.to_string() + sp + path2
+    }
+}
+
 pub fn find_parents_exists_file(file: &str) -> Option<PathBuf> {
     let mut loop_count = 0_usize;
     match PathBuf::from(".").canonicalize() {
