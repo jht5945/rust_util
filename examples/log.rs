@@ -1,7 +1,9 @@
 #[macro_use] extern crate rust_util;
 
+use rust_util::XResult;
+
 // cargo run --example log
-fn main() {
+fn main() -> XResult<()> {
     std::env::set_var("LOGGER_LEVEL", "*");
     println!(r##"env LOGGER_LEVEL set to:
 debug or *
@@ -15,4 +17,6 @@ error or ^"##);
     success!("Hello {}", "world!");
     warning!("Hello {}", "world!");
     failure!("Hello {}", "world!");
+
+    simple_error!("helloworld {}", 1)
 }
