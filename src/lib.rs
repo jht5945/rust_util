@@ -21,6 +21,8 @@ pub mod util_time;
 pub mod util_net;
 pub mod util_term;
 pub mod util_git;
+// #[feature(use_clap)]
+pub mod util_clap;
 
 /// iff!(condition, result_when_true, result_when_false)
 #[macro_export] macro_rules! iff {
