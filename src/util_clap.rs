@@ -48,7 +48,7 @@ impl CommandExecutor {
         self
     }
 
-    pub fn run(&self) -> CommandError {
+    pub fn run(&self) -> XResult<()> {
         let mut app = App::new(env!("CARGO_PKG_NAME"))
                 .version(env!("CARGO_PKG_VERSION"))
                 .about(env!("CARGO_PKG_DESCRIPTION"));
@@ -62,7 +62,7 @@ impl CommandExecutor {
         for command in &self.commands {
             if let Some(sub_cmd_matches) = matches.subcommand_matches(command.name()) {
                 match command.run(&matches, sub_cmd_matches)? {
-                    None => return Ok(None),
+                    None => return Ok(()),
                     Some(code) => process::exit(code),
                 }
             }
@@ -73,7 +73,7 @@ impl CommandExecutor {
                 process::exit(1);
             },
             Some(default_cmd) => match default_cmd.run(&matches)? {
-                None => return Ok(None),
+                None => return Ok(()),
                 Some(code) => process::exit(code),
             },
         }
