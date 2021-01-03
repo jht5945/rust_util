@@ -16,7 +16,7 @@ pub trait DefaultCommand {
     fn run(&self, arg_matches: &ArgMatches) -> CommandError;
 }
 
-pub struct DefaultCommandImpl {}
+pub struct DefaultCommandImpl;
 impl DefaultCommand for DefaultCommandImpl {
     fn process_command<'a>(&self, app: App<'a, 'a>) -> App<'a, 'a> {
         app.arg(Arg::with_name("verbose").long("verbose").short("v").multiple(true).help("Show verbose info"))
@@ -36,6 +36,10 @@ pub struct CommandExecutor {
 }
 
 impl CommandExecutor {
+    pub fn new_default() -> Self {
+        Self::new(None)
+    }
+
     pub fn new(default_cmd: Option<Box<dyn DefaultCommand>>) -> Self {
         CommandExecutor{
             default_cmd,
@@ -45,6 +49,13 @@ impl CommandExecutor {
 
     pub fn add(&mut self, cmd: Box<dyn Command>) -> &mut Self {
         self.commands.push(cmd);
+        self
+    }
+
+    pub fn add_commands(&mut self, cmds: Vec<Box<dyn Command>>) -> &mut Self {
+        for cmd in cmds.into_iter() {
+            self.add(cmd);
+        }
         self
     }
 
