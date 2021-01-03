@@ -1,12 +1,30 @@
-use std::{ fs::File, io::{ self, ErrorKind, prelude::* } };
+use std::io;
+use std::io::Write;
+use std::{fs::File, io::{ ErrorKind, prelude::* }};
 use std::time::{ SystemTime, Duration };
 
-use crate::{ XResult, new_box_ioerror };
+use crate::{SimpleError, XResult, new_box_ioerror};
 use crate::util_size;
 use crate::util_msg;
 use crate::util_file;
 
 pub const DEFAULT_BUF_SIZE: usize = 8 * 1024;
+
+pub fn stdout_or_file_write(file: Option<&str>, overwrite: bool) -> XResult<Box<dyn Write>> {
+    match file {
+        None => Ok(Box::new(io::stdout())),
+        Some(output) => {
+            if let Ok(_) = File::open(output) {
+                if !overwrite {
+                    return Err(SimpleError::new(format!("File exists: {}", output)).into());
+                }
+            }
+            Ok(Box::new(File::create(output).map_err(|e| {
+                SimpleError::new(format!("Create file: {}, failed: {}", output, e))
+            })?))
+        },
+    }
+}
 
 pub struct PrintStatusContext {
     pub print_interval_time: Duration,
