@@ -1,6 +1,5 @@
-use std::io;
-use std::io::Write;
-use std::{fs::File, io::{ ErrorKind, prelude::* }};
+use std::io::{ self, Write, ErrorKind, prelude::* };
+use std::fs::File;
 use std::time::{ SystemTime, Duration };
 
 use crate::{SimpleError, XResult, new_box_ioerror};
