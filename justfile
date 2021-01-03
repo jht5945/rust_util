@@ -9,4 +9,8 @@ log:
 publish:
   cargo publish
 
+# test all
+test:
+  cargo test
+  cd demo/test_clap; cargo build; cargo test
 
