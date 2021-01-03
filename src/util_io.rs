@@ -1,8 +1,8 @@
-use std::io::{ self, Write, ErrorKind, prelude::* };
+use std::io::{self, Write, ErrorKind, prelude::*};
 use std::fs::File;
-use std::time::{ SystemTime, Duration };
+use std::time::{SystemTime, Duration};
 
-use crate::{SimpleError, XResult, new_box_ioerror};
+use crate::{SimpleError, XResult};
 use crate::util_size;
 use crate::util_msg;
 use crate::util_file;
@@ -86,7 +86,7 @@ pub fn get_read_stdin_or_file(file: &str) -> XResult<Box<dyn Read>> {
     } else {
         match File::open(&util_file::resolve_file_path(file)) {
             Ok(f) => Ok(Box::new(f)),
-            Err(err) => Err(new_box_ioerror(&format!("Open file {}, erorr: {}", file, err))),
+            Err(err) => Err(SimpleError::new(format!("Open file {}, erorr: {}", file, err)).into()),
         }
     }
 }

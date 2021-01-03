@@ -1,13 +1,9 @@
-#[macro_use]
-extern crate lazy_static;
+#[macro_use] extern crate lazy_static;
 extern crate term;
 
 use std::error::Error;
-use std::io::Error as IoError;
-use std::io::ErrorKind;
-use std::fmt::Display;
-use std::fmt::Formatter;
-use std::fmt::Result as FmtResult;
+use std::io::{Error as IoError, ErrorKind};
+use std::fmt::{Display, Formatter, Result as FmtResult};
 
 pub mod util_io;
 pub mod util_os;

@@ -1,5 +1,4 @@
-use std::time::SystemTime;
-use std::time::Duration;
+use std::time::{SystemTime, Duration};
 
 pub fn get_current_secs() -> u64 {
     SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0 /* SHOULD NOT HAPPEN */ )

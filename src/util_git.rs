@@ -1,7 +1,5 @@
 use std::process::Command;
-use crate::XResult;
-use crate::util_msg;
-use crate::util_cmd::run_command_and_wait;
+use crate::{XResult, util_msg, util_cmd};
 
 const LANG: &str = "LANG";
 const EN_US: &str = "en_US";
@@ -59,7 +57,7 @@ pub fn git_push(working_dir: Option<&str>) {
     let mut cmd = new_git_command(working_dir);
     cmd.arg("push");
     util_msg::print_info(&format!("Exec: {:?}", cmd));
-    if let Err(e) = run_command_and_wait(&mut cmd) {
+    if let Err(e) = util_cmd::run_command_and_wait(&mut cmd) {
         util_msg::print_error(&format!("Run git push failed: {}", e));
     }
 }
@@ -71,7 +69,7 @@ pub fn git_add(working_dir: Option<&str>, files: &[String]) {
         cmd.arg(&f);
     }
     util_msg::print_info(&format!("Exec: {:?}", cmd));
-    if let Err(e) = run_command_and_wait(&mut cmd) {
+    if let Err(e) = util_cmd::run_command_and_wait(&mut cmd) {
         util_msg::print_error(&format!("Run git add failed: {}", e));
     }
 }
@@ -85,7 +83,7 @@ pub fn git_commit(working_dir: Option<&str>, message: &str, files: &[String]) {
         cmd.arg(&f);
     }
     util_msg::print_info(&format!("Exec: {:?}", cmd));
-    if let Err(e) = run_command_and_wait(&mut cmd) {
+    if let Err(e) = util_cmd::run_command_and_wait(&mut cmd) {
         util_msg::print_error(&format!("Run git commit failed: {}", e));
     }
 }

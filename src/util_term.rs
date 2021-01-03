@@ -1,5 +1,4 @@
-use std::io;
-use std::io::Write;
+use std::io::{self, Write};
 
 pub const RED:    &str = "\x1B[91m";
 pub const GREEN:  &str = "\x1B[92m";

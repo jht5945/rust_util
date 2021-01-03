@@ -1,4 +1,4 @@
-use std::fmt::{ self, Display, Formatter };
+use std::fmt::{self, Display, Formatter};
 use std::result::Result;
 use std::net::SocketAddr;
 use crate::XResult;

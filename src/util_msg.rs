@@ -1,4 +1,6 @@
-use std::{ env, io::{ self, Write }, sync::{ Arc, Mutex } };
+use std::env;
+use std::io::{self, Write};
+use std::sync::{Arc, Mutex};
 
 lazy_static! {
     pub static ref IS_ATTY: bool = is_atty();

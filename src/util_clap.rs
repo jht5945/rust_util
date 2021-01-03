@@ -1,7 +1,6 @@
 use std::process;
 use clap::{App, Arg, ArgMatches};
-use crate::XResult;
-use crate::util_msg;
+use crate::{XResult, util_msg};
 
 pub type CommandError = XResult<Option<i32>>;
 
