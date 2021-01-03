@@ -8,7 +8,7 @@ pub type CommandError = XResult<Option<i32>>;
 pub trait Command {
     fn name(&self) -> &str;
     fn subcommand<'a>(&self) -> App<'a, 'a>;
-    fn run(&self, arg_matches: &ArgMatches, _: &ArgMatches) -> CommandError;
+    fn run(&self, arg_matches: &ArgMatches, sub_arg_matches: &ArgMatches) -> CommandError;
 }
 
 pub trait DefaultCommand {
