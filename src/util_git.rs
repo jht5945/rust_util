@@ -25,6 +25,15 @@ pub fn git_status_change(working_dir: Option<&str>) -> XResult<GitStatusChange> 
     parse_git_status_change(&git_status)
 }
 
+pub fn git_rev_parse_head(working_dir: Option<&str>) -> XResult<String> {
+    let mut cmd = new_git_command(working_dir);
+    cmd.args(vec!["rev-parse", "HEAD"]);
+    util_msg::print_info(&format!("Exec: {:?}", cmd));
+    let output = cmd.output()?;
+    let rev_parse_head = String::from_utf8(output.stdout)?;
+    Ok(rev_parse_head.trim().to_string())
+}
+
 pub fn git_fetch_dry_run(working_dir: Option<&str>) -> XResult<bool> {
     let mut cmd = new_git_command(working_dir);
     cmd.args(vec!["fetch", "--dry-run"]);
