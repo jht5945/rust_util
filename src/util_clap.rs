@@ -59,9 +59,13 @@ impl CommandExecutor {
     }
 
     pub fn run(&self) -> XResult<()> {
-        let mut app = App::new(env!("CARGO_PKG_NAME"))
+        let app = App::new(env!("CARGO_PKG_NAME"))
                 .version(env!("CARGO_PKG_VERSION"))
                 .about(env!("CARGO_PKG_DESCRIPTION"));
+        self.run_with(app)
+    }
+
+    pub fn run_with<'a>(&self, mut app: App<'a, 'a>) -> XResult<()> {
         if let Some(default_cmd) = &self.default_cmd {
             app = default_cmd.process_command(app);
         }
