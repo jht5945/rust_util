@@ -5,7 +5,7 @@ use crate::XResult;
 
 const DEFAULT_LISTEN_ADDR: [u8; 4] = [127, 0, 0, 1];
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
 pub enum IpAddress {
     Ipv4([u8; 4]),
 }
