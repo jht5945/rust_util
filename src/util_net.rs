@@ -2,8 +2,63 @@ use std::fmt::{self, Display, Formatter};
 use std::result::Result;
 use std::net::SocketAddr;
 use crate::XResult;
+use std::collections::HashSet;
 
 const DEFAULT_LISTEN_ADDR: [u8; 4] = [127, 0, 0, 1];
+
+pub struct IpAndIpMaskMatcher {
+    min_mask_len: u8,
+    ip_and_ip_mask_set: HashSet<u64>,
+}
+
+impl IpAndIpMaskMatcher {
+    pub fn new() -> Self {
+        IpAndIpMaskMatcher {
+            min_mask_len: 32,
+            ip_and_ip_mask_set: HashSet::with_capacity(128),
+        }
+    }
+
+    pub fn add_ip_address_mask(&mut self, ip_address: &IpAddress, mask_len: u8) -> bool {
+        if mask_len > 32 {
+            return false;
+        }
+        if mask_len < self.min_mask_len {
+            self.min_mask_len = mask_len;
+        }
+        let mask_n_ip = Self::get_mask_n_ip(ip_address.to_u32() as u64, mask_len);
+        self.ip_and_ip_mask_set.insert(mask_n_ip);
+        true
+    }
+
+    pub fn add_ip_address(&mut self, ip_address: &IpAddress) -> bool {
+        self.add_ip_address_mask(ip_address, 32)
+    }
+
+    pub fn contains_ip_address(&self, ip_address: &IpAddress) -> bool {
+        self.contains_ip_address_mask(ip_address, 32)
+    }
+
+    pub fn contains_ip_address_mask(&self, ip_address: &IpAddress, mask_len: u8) -> bool {
+        if mask_len > 32 {
+            return false;
+        }
+        let ip_addr_as_u64 = ip_address.to_u32() as u64;
+        for i_mask_len in (self.min_mask_len..=mask_len).rev() {
+            let mask_n_ip = Self::get_mask_n_ip(ip_addr_as_u64, i_mask_len);
+            if self.ip_and_ip_mask_set.contains(&mask_n_ip) {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn get_mask_n_ip(ip_addr_as_u64: u64, mask_len: u8) -> u64 {
+        let mask = u64::from_be_bytes([0x00, 0x00, 0x00, mask_len, 0x00, 0x00, 0x00, 0x00]);
+        let ip_mask_bits = get_ipv4_mask(mask_len);
+        mask + (ip_addr_as_u64 & ip_mask_bits as u64)
+    }
+}
 
 #[derive(Debug, Clone, PartialOrd, PartialEq, Ord, Eq)]
 pub enum IpAddress {
@@ -18,6 +73,14 @@ impl IpAddress {
     pub fn to_address(&self) -> String {
         match self {
             IpAddress::Ipv4(ipv4) => ipv4.iter().map(|p| p.to_string()).collect::<Vec<_>>().join("."),
+        }
+    }
+
+    pub fn to_u32(&self) -> u32 {
+        match self {
+            IpAddress::Ipv4(ipv4) => {
+                u32::from_be_bytes(ipv4.clone())
+            }
         }
     }
 
@@ -60,7 +123,7 @@ impl IpAddressMask {
         match self {
             IpAddressMask::Ipv4(ipv4, mask) => {
                 format!("{}/{}", ipv4.iter().map(|p| p.to_string()).collect::<Vec<_>>().join("."), mask)
-            },
+            }
         }
     }
 
@@ -74,9 +137,9 @@ impl IpAddressMask {
                         let addr_ipv4_u32 = ipv4_to_u32(&socket_addr_v4_octets);
                         let mask_u32 = ipv4_mask(*mask);
                         self_ipv4_u32 & mask_u32 == addr_ipv4_u32 & mask_u32
-                    },
+                    }
                 }
-            },
+            }
             SocketAddr::V6(_) => false,
         }
     }
@@ -163,14 +226,16 @@ fn parse_ip_and_port(listen: &str) -> Option<([u8; 4], u16)> {
         None => DEFAULT_LISTEN_ADDR,
         Some(addr) if addr.is_empty() => DEFAULT_LISTEN_ADDR,
         Some(addr) => match parse_ipv4_addr(addr) {
-            Some(parsed_ip_address) => parsed_ip_address, None => return None,
+            Some(parsed_ip_address) => parsed_ip_address,
+            None => return None,
         },
     };
 
     let listen_port = match listen.split(':').nth(1) {
         None => return None,
         Some(port) => match port.parse::<u16>() {
-            Ok(port) => port, Err(_) => return None,
+            Ok(port) => port,
+            Err(_) => return None,
         },
     };
 
@@ -189,12 +254,25 @@ fn ipv4_mask(mask: u8) -> u32 {
     r
 }
 
-fn ipv4_to_u32(ipv4: &[u8; 4]) -> u32 {
-    u32::from_be_bytes(*ipv4)
-    // ((ipv4[0] as u32) << (8 * 3)) + ((ipv4[1] as u32) << (8 * 2)) + ((ipv4[2] as u32) << 8) + (ipv4[3] as u32)
+fn get_ipv4_mask(mask_len: u8) -> u32 {
+    let mut m = 0_u32;
+    let ml = mask_len as usize;
+    for _ in 0..ml {
+        m <<= 1;
+        m |= 1;
+    }
+    let ml_left = 32 - ml;
+    for _ in 0..ml_left {
+        m <<= 1;
+    }
+    m
 }
 
-fn parse_ipv4_addr(addr: &str) -> Option<[u8; 4]>  {
+fn ipv4_to_u32(ipv4: &[u8; 4]) -> u32 {
+    u32::from_be_bytes(*ipv4)
+}
+
+fn parse_ipv4_addr(addr: &str) -> Option<[u8; 4]> {
     let addr_parts = addr.split('.').collect::<Vec<_>>();
     if addr_parts.len() != 4 {
         return None;
@@ -244,4 +322,66 @@ fn test_ip_address_mask_group_is_matches() {
     assert_eq!(true, group.is_matches(&addr));
     let addr = SocketAddr::new(std::net::IpAddr::V4(std::net::Ipv4Addr::new(10, 0, 1, 2)), 123);
     assert_eq!(false, group.is_matches(&addr));
+}
+
+#[test]
+fn test_get_ipv4_mask() {
+    assert_eq!([0, 0, 0, 0], get_ipv4_mask(0).to_be_bytes());
+    assert_eq!([128, 0, 0, 0], get_ipv4_mask(1).to_be_bytes());
+    assert_eq!([192, 0, 0, 0], get_ipv4_mask(2).to_be_bytes());
+    assert_eq!([224, 0, 0, 0], get_ipv4_mask(3).to_be_bytes());
+    assert_eq!([240, 0, 0, 0], get_ipv4_mask(4).to_be_bytes());
+    assert_eq!([248, 0, 0, 0], get_ipv4_mask(5).to_be_bytes());
+    assert_eq!([252, 0, 0, 0], get_ipv4_mask(6).to_be_bytes());
+    assert_eq!([254, 0, 0, 0], get_ipv4_mask(7).to_be_bytes());
+    assert_eq!([255, 0, 0, 0], get_ipv4_mask(8).to_be_bytes());
+    assert_eq!([255, 128, 0, 0], get_ipv4_mask(9).to_be_bytes());
+    assert_eq!([255, 192, 0, 0], get_ipv4_mask(10).to_be_bytes());
+    assert_eq!([255, 224, 0, 0], get_ipv4_mask(11).to_be_bytes());
+    assert_eq!([255, 240, 0, 0], get_ipv4_mask(12).to_be_bytes());
+    assert_eq!([255, 248, 0, 0], get_ipv4_mask(13).to_be_bytes());
+    assert_eq!([255, 252, 0, 0], get_ipv4_mask(14).to_be_bytes());
+    assert_eq!([255, 254, 0, 0], get_ipv4_mask(15).to_be_bytes());
+    assert_eq!([255, 255, 255, 254], get_ipv4_mask(31).to_be_bytes());
+    assert_eq!([255, 255, 255, 255], get_ipv4_mask(32).to_be_bytes());
+}
+
+#[test]
+fn test_ip_and_ip_mask_matcher() {
+    {
+        let mut matcher = IpAndIpMaskMatcher::new();
+        matcher.add_ip_address(&IpAddress::Ipv4([127, 0, 0, 1]));
+        assert!(matcher.contains_ip_address(&IpAddress::Ipv4([127, 0, 0, 1])));
+        assert!(!matcher.contains_ip_address_mask(&IpAddress::Ipv4([127, 0, 0, 0]), 31));
+    }
+    {
+        let mut matcher = IpAndIpMaskMatcher::new();
+        matcher.add_ip_address_mask(&IpAddress::Ipv4([127, 0, 0, 0]), 24);
+        assert!(matcher.contains_ip_address(&IpAddress::Ipv4([127, 0, 0, 1])));
+        assert!(matcher.contains_ip_address_mask(&IpAddress::Ipv4([127, 0, 0, 0]), 31));
+        assert!(matcher.contains_ip_address_mask(&IpAddress::Ipv4([127, 0, 0, 0]), 30));
+        assert!(matcher.contains_ip_address_mask(&IpAddress::Ipv4([127, 0, 0, 0]), 24));
+        assert!(!matcher.contains_ip_address_mask(&IpAddress::Ipv4([127, 0, 0, 0]), 23));
+    }
+    {
+        let mut matcher = IpAndIpMaskMatcher::new();
+        matcher.add_ip_address_mask(&IpAddress::Ipv4([0, 0, 0, 0]), 0);
+        assert!(matcher.contains_ip_address(&IpAddress::Ipv4([127, 0, 0, 1])));
+        assert!(matcher.contains_ip_address_mask(&IpAddress::Ipv4([127, 0, 0, 0]), 31));
+        assert!(matcher.contains_ip_address_mask(&IpAddress::Ipv4([127, 0, 0, 0]), 30));
+        assert!(matcher.contains_ip_address_mask(&IpAddress::Ipv4([127, 0, 0, 0]), 24));
+        assert!(matcher.contains_ip_address_mask(&IpAddress::Ipv4([127, 0, 0, 0]), 23));
+    }
+    {
+        let mut matcher = IpAndIpMaskMatcher::new();
+        matcher.add_ip_address_mask(&IpAddress::Ipv4([192, 168, 1, 2]), 32);
+        assert!(matcher.contains_ip_address(&IpAddress::Ipv4([192, 168, 1, 2])));
+        assert!(!matcher.contains_ip_address_mask(&IpAddress::Ipv4([192, 168, 1, 2]), 31));
+    }
+    {
+        let mut matcher = IpAndIpMaskMatcher::new();
+        matcher.add_ip_address_mask(&IpAddress::Ipv4([192, 168, 1, 2]), 16);
+        assert!(matcher.contains_ip_address(&IpAddress::Ipv4([192, 168, 1, 2])));
+        assert!(matcher.contains_ip_address_mask(&IpAddress::Ipv4([192, 168, 1, 2]), 31));
+    }
 }
