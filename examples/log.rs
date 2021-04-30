@@ -1,6 +1,6 @@
 #[macro_use] extern crate rust_util;
 
-use rust_util::XResult;
+use rust_util::{XResult, SimpleError};
 
 // cargo run --example log
 fn main() -> XResult<()> {
@@ -18,5 +18,12 @@ error or ^"##);
     warning!("Hello {}", "world!");
     failure!("Hello {}", "world!");
 
+    println!("{:?}", test_opt_result());
+
     simple_error!("helloworld {}", 1)
+}
+
+fn test_opt_result() -> XResult<()> {
+    let a = Err(SimpleError::new("test".into()));
+    opt_result!(a, "error: {}")
 }

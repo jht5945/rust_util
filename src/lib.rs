@@ -41,7 +41,7 @@ pub mod util_tlv;
     ($($arg:tt)+) => ( rust_util::util_msg::print_debug(&format!($($arg)+)); )
 }
 #[macro_export] macro_rules! opt_value {
-    ($e: expr) => ( match $e { Some(o) => o, None => return, } )
+    ($ex: expr) => ( match $ex { Some(o) => o, None => return, } )
 }
 
 pub type XResult<T> = Result<T, Box<dyn Error>>;
@@ -54,8 +54,20 @@ pub fn new_box_ioerror(m: &str) -> Box<dyn Error> {
     Box::new(IoError::new(ErrorKind::Other, m))
 }
 
+#[macro_export] macro_rules! opt_result {
+    ($ex: expr, $($arg:tt)+) => (
+        match $ex {
+            Ok(o) => o,
+            Err(e) => return Err(rust_util::SimpleError::new(
+                format!("{}, file: {}, line: {}", format!($($arg)+, e), file!(), line!())
+            ).into()),
+        }
+    )
+}
 #[macro_export] macro_rules! simple_error {
-    ($($arg:tt)+) => ( Err(rust_util::SimpleError::new(format!($($arg)+)).into()) )
+    ($($arg:tt)+) => ( Err(rust_util::SimpleError::new(
+        format!("{}, file: {}, line: {}", format!($($arg)+), file!(), line!())
+    ).into()) )
 }
 
 #[derive(Debug)]
