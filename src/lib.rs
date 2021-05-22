@@ -40,6 +40,12 @@ pub mod util_tlv;
 #[macro_export] macro_rules! debugging {
     ($($arg:tt)+) => ( rust_util::util_msg::print_debug(&format!($($arg)+)); )
 }
+#[macro_export] macro_rules! failure_and_exit {
+    ($($arg:tt)+) => ( {
+        rust_util::util_msg::print_error(&format!($($arg)+));
+        std::process::exit(-1);
+    } )
+}
 #[macro_export] macro_rules! opt_value {
     ($ex: expr) => ( match $ex { Some(o) => o, None => return, } )
 }
