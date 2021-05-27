@@ -26,7 +26,9 @@ pub mod util_tlv;
     ($c:expr, $t:expr, $f:expr) => ( if $c { $t } else { $f } )
 }
 #[macro_export] macro_rules! information {
-    ($($arg:tt)+) => ( rust_util::util_msg::print_info(&format!($($arg)+)); )
+    ($($arg:tt)+) => ( rust_util::util_msg::when(rust_util::util_msg::MessageType::INFO, || {
+        rust_util::util_msg::print_info(&format!($($arg)+));
+    }); )
 }
 #[macro_export] macro_rules! success {
     ($($arg:tt)+) => ( rust_util::util_msg::print_ok(&format!($($arg)+)); )
