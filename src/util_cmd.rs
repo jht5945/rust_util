@@ -1,5 +1,35 @@
 use std::io::{self, Error, ErrorKind};
-use std::process::{Command, ExitStatus};
+use std::process::{Command, ExitStatus, Output};
+use crate::util_msg::{print_debug, print_error, MessageType};
+
+pub fn run_command_or_exit(cmd: &str, args: &[&str]) -> Output {
+    let mut c = Command::new(cmd);
+    c.args(args);
+    crate::util_msg::when(MessageType::DEBUG, || {
+        print_debug(&format!("Run command: {:?}", c));
+    });
+    let output = c.output();
+    match output {
+        Err(e) => {
+            print_error(&format!("Run command: {:?}, failed: {}", c, e));
+            std::process::exit(-1);
+        },
+        Ok(output) => {
+            if !output.status.success() {
+                print_error(&format!(r##"Run command failed, code: {:?}
+-----std out---------------------------------------------------------------
+{}
+-----std err---------------------------------------------------------------
+{}
+---------------------------------------------------------------------------"##,
+                    output.status.code(),
+                    String::from_utf8_lossy(&output.stdout),
+                    String::from_utf8_lossy(&output.stderr)));
+            }
+            output
+        }
+    }
+}
 
 pub fn run_command_and_wait(cmd: &mut Command) -> io::Result<ExitStatus> {
     cmd.spawn()?.wait()

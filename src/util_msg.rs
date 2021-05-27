@@ -92,6 +92,12 @@ pub fn is_logger_level_enabled(mt: MessageType) -> bool {
     mt.get_u8_value() >= logger_level.get_u8_value()
 }
 
+pub fn when<F>(mt: MessageType, f: F) where F: Fn() -> () {
+    if is_logger_level_enabled(mt) {
+        f();
+    }
+}
+
 pub fn print_message(mt: MessageType, message: &str) {
     if is_logger_level_enabled(mt) {
         match mt {
