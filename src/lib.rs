@@ -38,7 +38,9 @@ pub mod util_tlv;
     ($($arg:tt)+) => ( rust_util::util_msg::print_error(&format!($($arg)+)); )
 }
 #[macro_export] macro_rules! debugging {
-    ($($arg:tt)+) => ( rust_util::util_msg::print_debug(&format!($($arg)+)); )
+    ($($arg:tt)+) => ( rust_util::util_msg::when(rust_util::util_msg::MessageType::DEBUG, || {
+        rust_util::util_msg::print_debug(&format!($($arg)+))
+    }); )
 }
 #[macro_export] macro_rules! failure_and_exit {
     ($($arg:tt)+) => ( {
