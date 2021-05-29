@@ -1,11 +1,11 @@
 use std::time::{SystemTime, Duration};
 
 pub fn get_current_secs() -> u64 {
-    SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0 /* SHOULD NOT HAPPEN */ )
+    SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0 /* SHOULD NOT HAPPEN */)
 }
 
 pub fn get_current_millis() -> u128 {
-    SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0 /* SHOULD NOT HAPPEN */ )
+    SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0 /* SHOULD NOT HAPPEN */)
 }
 
 pub fn parse_duration(t: &str) -> Option<Duration> {
@@ -20,7 +20,7 @@ pub fn parse_duration(t: &str) -> Option<Duration> {
         Some('m') => parse_and_process_time(60 * 1000),
         Some('h') => parse_and_process_time(60 * 60 * 1000),
         Some('d') => parse_and_process_time(24 * 60 * 60 * 1000),
-        _ => t.parse::<u64>().map(|t| Duration::from_millis(t)).ok(),
+        _ => t.parse::<u64>().map(Duration::from_millis).ok(),
     }
 }
 
@@ -47,5 +47,5 @@ fn test_parse_duration() {
     assert_eq!(Duration::from_millis(60000), parse_duration("1m").unwrap());
     assert_eq!(Duration::from_millis(3600000), parse_duration("1h").unwrap());
     assert_eq!(Duration::from_millis(1800000), parse_duration("0.5h").unwrap());
-    assert_eq!(Duration::from_millis(24*3600000), parse_duration("1d").unwrap());
+    assert_eq!(Duration::from_millis(24 * 3600000), parse_duration("1d").unwrap());
 }

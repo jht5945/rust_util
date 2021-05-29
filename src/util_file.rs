@@ -1,8 +1,7 @@
-use std::env;
 use std::fs::{self, File};
 use std::io::{Lines, BufReader};
 use std::path::{Path, PathBuf};
-use crate::{iff, util_os, util_io, util_msg, new_box_ioerror, XResult};
+use crate::{util_os, util_io, util_msg, new_box_ioerror, XResult};
 
 pub struct JoinFilesReader {
     files: Vec<String>,
@@ -18,7 +17,6 @@ fn open_file_as_lines(f: &str) -> XResult<Lines<BufReader<File>>> {
 }
 
 impl JoinFilesReader {
-
     pub fn new(fns: &[&str]) -> XResult<Self> {
         let mut files: Vec<String> = vec![];
         for f in fns {
@@ -49,10 +47,11 @@ impl Iterator for JoinFilesReader {
                         } else {
                             // if open file failed, will not continue read files
                             self.file_lines = Some(Box::new(match open_file_as_lines(&self.files[self.file_ptr]) {
-                                Ok(ln) => ln, Err(e) => return Some(Err(e)),
+                                Ok(ln) => ln,
+                                Err(e) => return Some(Err(e)),
                             }));
                         }
-                    },
+                    }
                 },
                 None => return None,
             }
@@ -129,13 +128,15 @@ pub fn locate_file(files: &[String]) -> Option<PathBuf> {
     None
 }
 
+#[deprecated]
 pub fn get_home_str() -> Option<String> {
-    iff!(util_os::is_macos_or_linux(), env::var("HOME").ok(), None)
+    util_os::get_user_home()
 }
 
 pub fn resolve_file_path(path: &str) -> String {
-    let home_path = match get_home_str() {
-        Some(p) => p, None => return path.to_owned(),
+    let home_path = match util_os::get_user_home() {
+        Some(p) => p,
+        None => return path.to_owned(),
     };
     match path {
         "~" => home_path,
@@ -145,13 +146,13 @@ pub fn resolve_file_path(path: &str) -> String {
 }
 
 pub fn get_home_path() -> Option<PathBuf> {
-    Some(PathBuf::from(get_home_str()?))
+    Some(PathBuf::from(util_os::get_user_home()?))
 }
 
 pub fn get_absolute_path(path: &str) -> Option<PathBuf> {
     match path {
-        "~" => Some(PathBuf::from(get_home_str()?)),
-        path if path.starts_with("~/")  => Some(PathBuf::from(&format!("{}/{}", get_home_str()?, &path[2..]))),
+        "~" => Some(PathBuf::from(util_os::get_user_home()?)),
+        path if path.starts_with("~/") => Some(PathBuf::from(&format!("{}/{}", util_os::get_user_home()?, &path[2..]))),
         path => fs::canonicalize(path).ok(),
     }
 }
@@ -168,37 +169,39 @@ pub fn is_symlink(path: &Path) -> bool {
 }
 
 pub fn walk_dir<FError, FProcess, FFilter>(dir: &Path,
-        func_walk_error: &FError,
-        func_process_file: &FProcess,
-        func_filter_dir: &FFilter) -> XResult<()>
-        where FError: Fn(&Path, Box<dyn std::error::Error>),
-              FProcess: Fn(&Path),
-              FFilter: Fn(&Path) -> bool {
+                                           func_walk_error: &FError,
+                                           func_process_file: &FProcess,
+                                           func_filter_dir: &FFilter) -> XResult<()>
+    where FError: Fn(&Path, Box<dyn std::error::Error>),
+          FProcess: Fn(&Path),
+          FFilter: Fn(&Path) -> bool {
     walk_dir_with_depth_check(&mut 0u32, dir, func_walk_error, func_process_file, func_filter_dir)
 }
 
 fn walk_dir_with_depth_check<FError, FProcess, FFilter>(depth: &mut u32, dir: &Path,
-        func_walk_error: &FError,
-        func_process_file: &FProcess,
-        func_filter_dir: &FFilter) -> XResult<()>
-        where FError: Fn(&Path, Box<dyn std::error::Error>),
-              FProcess: Fn(&Path),
-              FFilter: Fn(&Path) -> bool {
+                                                        func_walk_error: &FError,
+                                                        func_process_file: &FProcess,
+                                                        func_filter_dir: &FFilter) -> XResult<()>
+    where FError: Fn(&Path, Box<dyn std::error::Error>),
+          FProcess: Fn(&Path),
+          FFilter: Fn(&Path) -> bool {
     if *depth > 100u32 {
         return Err(new_box_ioerror(&format!("Depth exceed, depth: {}, path: {:?}", *depth, dir)));
     }
     let read_dir = match dir.read_dir() {
-        Ok(rd) => rd, Err(err) => {
+        Ok(rd) => rd,
+        Err(err) => {
             func_walk_error(&dir, Box::new(err));
             return Ok(());
-        },
+        }
     };
     for dir_entry_item in read_dir {
         let dir_entry = match dir_entry_item {
-            Ok(item) => item, Err(err) => {
+            Ok(item) => item,
+            Err(err) => {
                 func_walk_error(&dir, Box::new(err));
                 continue; // Ok?
-            },
+            }
         };
 
         let path_buf = dir_entry.path();

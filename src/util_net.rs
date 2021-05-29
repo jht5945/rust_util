@@ -79,7 +79,7 @@ impl IpAddress {
     pub fn to_u32(&self) -> u32 {
         match self {
             IpAddress::Ipv4(ipv4) => {
-                u32::from_be_bytes(ipv4.clone())
+                u32::from_be_bytes(*ipv4)
             }
         }
     }

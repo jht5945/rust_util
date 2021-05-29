@@ -13,15 +13,13 @@ pub fn stdout_or_file_write(file: Option<&str>, overwrite: bool) -> XResult<Box<
     match file {
         None => Ok(Box::new(io::stdout())),
         Some(output) => {
-            if let Ok(_) = File::open(output) {
-                if !overwrite {
-                    return Err(SimpleError::new(format!("File exists: {}", output)).into());
-                }
+            if File::open(output).is_ok() && !overwrite {
+                return Err(SimpleError::new(format!("File exists: {}", output)).into());
             }
             Ok(Box::new(File::create(output).map_err(|e| {
                 SimpleError::new(format!("Create file: {}, failed: {}", output, e))
             })?))
-        },
+        }
     }
 }
 
@@ -59,10 +57,7 @@ impl PrintStatusContext {
             if written > self.total_written_bytes && (written - self.total_written_bytes > self.print_interval_bytes) {
                 return true;
             }
-            match last_print_cost.as_millis() {
-                m if m > self.print_interval_time.as_millis() => true,
-                _ => false,
-            }
+            last_print_cost.as_millis() > self.print_interval_time.as_millis()
         };
         if should_update_status_line() {
             self.last_print_time = now;
@@ -104,18 +99,18 @@ pub fn read_to_bytes(read: &mut dyn Read) -> XResult<Vec<u8>> {
 }
 
 pub fn copy_io_default<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64) -> io::Result<u64>
-        where R: io::Read, W: io::Write {
+    where R: io::Read, W: io::Write {
     copy_io_with_head(reader, writer, total, "Downloading", &mut PrintStatusContext::default())
 }
 
 pub fn copy_io<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64, print_status_context: &mut PrintStatusContext)
-        -> io::Result<u64>
-        where R: io::Read, W: io::Write {
+                                     -> io::Result<u64>
+    where R: io::Read, W: io::Write {
     copy_io_with_head(reader, writer, total, "Downloading", print_status_context)
 }
 
 pub fn copy_io_with_head<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, total: i64, head: &str, print_status_context: &mut PrintStatusContext) -> io::Result<u64>
-        where R: io::Read, W: io::Write {
+    where R: io::Read, W: io::Write {
     let written = copy_io_callback(reader, writer, total, print_status_context, &mut |total, written, _len, print_status_context| {
         print_status_last_line(head, total, written as i64, print_status_context);
     });
@@ -124,9 +119,9 @@ pub fn copy_io_with_head<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W, t
 }
 
 pub fn copy_io_callback<R: ?Sized, W: ?Sized, FCallback>(reader: &mut R, writer: &mut W, total: i64, print_status_context: &mut PrintStatusContext, callback: &mut FCallback) -> io::Result<u64>
-        where R: io::Read,
-              W: io::Write,
-              FCallback: Fn(i64, u64, usize, &mut PrintStatusContext) {
+    where R: io::Read,
+          W: io::Write,
+          FCallback: Fn(i64, u64, usize, &mut PrintStatusContext) {
     let mut written = 0u64;
     let mut buf: [u8; DEFAULT_BUF_SIZE] = [0u8; DEFAULT_BUF_SIZE];
     loop {
@@ -154,14 +149,14 @@ pub fn print_status_last_line(head: &str, total: i64, written: i64, print_status
     }
     if total > 0 {
         util_msg::print_lastline(&format!("{}, Total: {}, Finished: {}, Speed: {}",
-            head,
-            util_size::get_display_size(total),
-            util_size::get_display_size(written),
-            download_speed));
+                                          head,
+                                          util_size::get_display_size(total),
+                                          util_size::get_display_size(written),
+                                          download_speed));
     } else {
         util_msg::print_lastline(&format!("{}, Finished: {}, Speed: {}",
-            head,
-            util_size::get_display_size(written),
-            download_speed));
+                                          head,
+                                          util_size::get_display_size(written),
+                                          download_speed));
     }
 }

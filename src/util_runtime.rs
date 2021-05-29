@@ -2,10 +2,10 @@ use std::sync::Mutex;
 use crate::util_msg::MessageType;
 
 lazy_static! {
-    static ref EXIT_CALLBACK: Mutex<Vec<Box<dyn Fn() -> () + Send + 'static>>> = Mutex::new(vec![]);
+    static ref EXIT_CALLBACK: Mutex<Vec<Box<dyn Fn() + Send + 'static>>> = Mutex::new(vec![]);
 }
 
-pub fn register_callback<F>(f: F) where F: Fn() -> () + Send + 'static {
+pub fn register_callback<F>(f: F) where F: Fn() + Send + 'static {
     let mut exit_callbacks = EXIT_CALLBACK.lock().unwrap();
     exit_callbacks.push(Box::new(f));
 }

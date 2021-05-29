@@ -16,7 +16,7 @@ pub struct GitStatusChange {
 impl GitStatusChange {
     pub fn is_empty(&self) -> bool {
         self.added.is_empty() && self.modified.is_empty()
-     && self.deleted.is_empty() && self.untracked.is_empty()
+            && self.deleted.is_empty() && self.untracked.is_empty()
     }
 }
 
@@ -58,7 +58,7 @@ pub fn git_branch(working_dir: Option<&str>) -> XResult<Option<String>> {
     util_msg::print_info(&format!("Exec: {:?}", cmd));
     let output = cmd.output()?;
     let git_branch = String::from_utf8(output.stdout)?;
-    let current_branch = git_branch.lines().find(|ln| ln.trim().starts_with("*"));
+    let current_branch = git_branch.lines().find(|ln| ln.trim().starts_with('*'));
     Ok(current_branch.map(|ln| ln.trim()[1..].trim().into()))
 }
 

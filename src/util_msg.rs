@@ -8,6 +8,7 @@ lazy_static! {
     static ref PRINT_MESSAGE_LOCK: Arc<Mutex<()>> = Arc::new(Mutex::new(()));
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Clone, Copy)]
 pub enum MessageType { DEBUG, INFO, OK, WARN, ERROR }
 
@@ -92,7 +93,7 @@ pub fn is_logger_level_enabled(mt: MessageType) -> bool {
     mt.get_u8_value() >= logger_level.get_u8_value()
 }
 
-pub fn when<F>(mt: MessageType, f: F) where F: Fn() -> () {
+pub fn when<F>(mt: MessageType, f: F) where F: Fn() {
     if is_logger_level_enabled(mt) {
         f();
     }
