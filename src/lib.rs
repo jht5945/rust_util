@@ -20,6 +20,7 @@ pub mod util_git;
 #[cfg(feature = "use_clap")]
 pub mod util_clap;
 pub mod util_tlv;
+pub mod util_runtime;
 
 /// iff!(condition, result_when_true, result_when_false)
 #[macro_export] macro_rules! iff {
@@ -47,6 +48,7 @@ pub mod util_tlv;
 #[macro_export] macro_rules! failure_and_exit {
     ($($arg:tt)+) => ( {
         rust_util::util_msg::print_error(&format!($($arg)+));
+        rsut_util::util_runtime::register_callback();
         std::process::exit(-1);
     } )
 }

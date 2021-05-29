@@ -16,6 +16,7 @@ pub trait DefaultCommand {
 }
 
 pub struct DefaultCommandImpl;
+
 impl DefaultCommand for DefaultCommandImpl {
     fn process_command<'a>(&self, app: App<'a, 'a>) -> App<'a, 'a> {
         app.arg(Arg::with_name("verbose").long("verbose").short("v").multiple(true).help("Show verbose info"))
@@ -40,7 +41,7 @@ impl CommandExecutor {
     }
 
     pub fn new(default_cmd: Option<Box<dyn DefaultCommand>>) -> Self {
-        CommandExecutor{
+        CommandExecutor {
             default_cmd,
             commands: Vec::new(),
         }
@@ -60,8 +61,8 @@ impl CommandExecutor {
 
     pub fn run(&self) -> XResult<()> {
         let app = App::new(env!("CARGO_PKG_NAME"))
-                .version(env!("CARGO_PKG_VERSION"))
-                .about(env!("CARGO_PKG_DESCRIPTION"));
+            .version(env!("CARGO_PKG_VERSION"))
+            .about(env!("CARGO_PKG_DESCRIPTION"));
         self.run_with(app)
     }
 
@@ -77,18 +78,25 @@ impl CommandExecutor {
             if let Some(sub_cmd_matches) = matches.subcommand_matches(command.name()) {
                 match command.run(&matches, sub_cmd_matches)? {
                     None => return Ok(()),
-                    Some(code) => process::exit(code),
+                    Some(code) => {
+                        crate::util_runtime::invoke_callbacks();
+                        process::exit(code);
+                    }
                 }
             }
         }
         match &self.default_cmd {
             None => {
                 util_msg::print_error("No default command, please try help (--help)");
+                crate::util_runtime::invoke_callbacks();
                 process::exit(1);
-            },
+            }
             Some(default_cmd) => match default_cmd.run(&matches)? {
                 None => return Ok(()),
-                Some(code) => process::exit(code),
+                Some(code) => {
+                    crate::util_runtime::invoke_callbacks();
+                    process::exit(code);
+                }
             },
         }
     }

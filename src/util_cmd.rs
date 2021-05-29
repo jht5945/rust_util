@@ -1,6 +1,6 @@
 use std::io::{self, Error, ErrorKind};
 use std::process::{Command, ExitStatus, Output};
-use crate::util_msg::{print_debug, print_error, MessageType};
+use crate::util_msg::{print_debug, print_error, MessageType, print_message};
 
 pub fn run_command_or_exit(cmd: &str, args: &[&str]) -> Output {
     let mut c = Command::new(cmd);
@@ -12,23 +12,30 @@ pub fn run_command_or_exit(cmd: &str, args: &[&str]) -> Output {
     match output {
         Err(e) => {
             print_error(&format!("Run command: {:?}, failed: {}", c, e));
+            crate::util_runtime::invoke_callbacks();
             std::process::exit(-1);
-        },
+        }
         Ok(output) => {
             if !output.status.success() {
-                print_error(&format!(r##"Run command failed, code: {:?}
+                print_output(MessageType::ERROR, &output);
+            }
+            output
+        }
+    }
+}
+
+pub fn print_output(message_type: MessageType, output: &Output) {
+    crate::util_msg::when(message_type, || {
+        print_message(message_type, &format!(r##"Run command failed, code: {:?}
 -----std out---------------------------------------------------------------
 {}
 -----std err---------------------------------------------------------------
 {}
 ---------------------------------------------------------------------------"##,
-                    output.status.code(),
-                    String::from_utf8_lossy(&output.stdout),
-                    String::from_utf8_lossy(&output.stderr)));
-            }
-            output
-        }
-    }
+                                             output.status.code(),
+                                             String::from_utf8_lossy(&output.stdout),
+                                             String::from_utf8_lossy(&output.stderr)));
+    });
 }
 
 pub fn run_command_and_wait(cmd: &mut Command) -> io::Result<ExitStatus> {
