@@ -48,7 +48,7 @@ pub mod util_runtime;
 #[macro_export] macro_rules! failure_and_exit {
     ($($arg:tt)+) => ( {
         rust_util::util_msg::print_error(&format!($($arg)+));
-        rsut_util::util_runtime::register_callback();
+        rust_util::util_runtime::register_callback();
         std::process::exit(-1);
     } )
 }
