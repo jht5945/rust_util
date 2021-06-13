@@ -13,6 +13,12 @@ impl Command for TestCommand {
 
     fn run(&self, _arg_matches: &ArgMatches, _: &ArgMatches) -> CommandError {
         println!("hello test!");
+        let a: Option<String> = None;
+        let b = move || -> rust_util::XResult<String> {
+            Ok(rust_util::opt_value_result!(a, "test: {}", 1))
+        };
+        let c = b();
+        println!("{:?}", c);
         Ok(None)
     }
 }

@@ -66,6 +66,17 @@ pub fn new_box_ioerror(m: &str) -> Box<dyn Error> {
     Box::new(IoError::new(ErrorKind::Other, m))
 }
 
+#[macro_export] macro_rules! opt_value_result {
+    ($ex: expr, $($arg:tt)+) => (
+        match $ex {
+            Some(o) => o,
+            None => return Err(rust_util::SimpleError::new(
+                format!("{}, file: {}, line: {}", format!($($arg)+), file!(), line!())
+            ).into()),
+        }
+    )
+}
+
 #[macro_export] macro_rules! opt_result {
     ($ex: expr, $($arg:tt)+) => (
         match $ex {
