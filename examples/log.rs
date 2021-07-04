@@ -1,6 +1,7 @@
 #[macro_use] extern crate rust_util;
 
 use rust_util::{XResult, SimpleError};
+use rust_util::util_msg::set_logger_std_out;
 
 // cargo run --example log
 fn main() -> XResult<()> {
@@ -19,6 +20,11 @@ error or ^"##);
     failure!("Hello {}", "world!");
 
     println!("{:?}", test_opt_result());
+
+    set_logger_std_out(false);
+    information!("Std err!");
+    warning!("Std err!");
+    set_logger_std_out(true);
 
     simple_error!("helloworld {}", 1)
 }
