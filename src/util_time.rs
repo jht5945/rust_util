@@ -1,11 +1,19 @@
-use std::time::{SystemTime, Duration};
+use std::time::{Duration, SystemTime};
 
 pub fn get_current_secs() -> u64 {
-    SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0 /* SHOULD NOT HAPPEN */)
+    get_secs(&SystemTime::now())
 }
 
 pub fn get_current_millis() -> u128 {
-    SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0 /* SHOULD NOT HAPPEN */)
+    get_millis(&SystemTime::now())
+}
+
+pub fn get_secs(system_time: &SystemTime) -> u64 {
+    system_time.duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0 /* SHOULD NOT HAPPEN */)
+}
+
+pub fn get_millis(system_time: &SystemTime) -> u128 {
+    system_time.duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0 /* SHOULD NOT HAPPEN */)
 }
 
 pub fn parse_duration(t: &str) -> Option<Duration> {
@@ -26,12 +34,12 @@ pub fn parse_duration(t: &str) -> Option<Duration> {
 
 #[test]
 fn test_get_current_secs() {
-    assert!(get_current_secs() != 0);
+    assert_ne!(get_current_secs(), 0);
 }
 
 #[test]
 fn test_get_current_millis() {
-    assert!(get_current_millis() != 0);
+    assert_ne!(get_current_millis(), 0);
 }
 
 #[test]
