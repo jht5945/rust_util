@@ -1,5 +1,30 @@
 use std::time::{Duration, SystemTime};
 
+pub trait UnixEpochTime {
+    fn to_secs(&self) -> Option<u64>;
+    fn to_millis(&self) -> Option<u64>;
+    fn from_secs(secs: u64) -> Self;
+    fn from_millis(millis: u64) -> Self;
+}
+
+impl UnixEpochTime for SystemTime {
+    fn to_secs(&self) -> Option<u64> {
+        self.duration_since(SystemTime::UNIX_EPOCH).ok().map(|d| d.as_secs())
+    }
+
+    fn to_millis(&self) -> Option<u64> {
+        self.duration_since(SystemTime::UNIX_EPOCH).ok().map(|d| d.as_millis() as u64)
+    }
+
+    fn from_secs(secs: u64) -> Self {
+        SystemTime::UNIX_EPOCH + Duration::from_secs(secs)
+    }
+
+    fn from_millis(millis: u64) -> Self {
+        SystemTime::UNIX_EPOCH + Duration::from_millis(millis)
+    }
+}
+
 pub fn get_current_secs() -> u64 {
     get_secs(&SystemTime::now())
 }
@@ -56,4 +81,15 @@ fn test_parse_duration() {
     assert_eq!(Duration::from_millis(3600000), parse_duration("1h").unwrap());
     assert_eq!(Duration::from_millis(1800000), parse_duration("0.5h").unwrap());
     assert_eq!(Duration::from_millis(24 * 3600000), parse_duration("1d").unwrap());
+}
+
+#[test]
+fn test_unix_epoch() {
+    let t = SystemTime::now();
+    let s = t.to_secs().unwrap();
+    let m = t.to_millis().unwrap();
+    let t2 = SystemTime::from_secs(s);
+    let t3 = SystemTime::from_millis(m);
+    assert_eq!(get_secs(&t), get_secs(&t2));
+    assert_eq!(get_millis(&t), get_millis(&t3));
 }
