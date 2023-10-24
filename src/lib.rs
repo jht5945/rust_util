@@ -40,6 +40,12 @@ pub mod util_runtime;
 #[macro_export] macro_rules! failure {
     ($($arg:tt)+) => ( rust_util::util_msg::print_error(&format!($($arg)+)); )
 }
+#[macro_export] macro_rules! println_ex {
+    ($($arg:tt)+) => ( rust_util::util_msg::print_ex(&format!($($arg)+), true); )
+}
+#[macro_export] macro_rules! print_ex {
+    ($($arg:tt)+) => ( rust_util::util_msg::print_ex(&format!($($arg)+), false); )
+}
 #[macro_export] macro_rules! debugging {
     ($($arg:tt)+) => ( rust_util::util_msg::when(rust_util::util_msg::MessageType::DEBUG, || {
         rust_util::util_msg::print_debug(&format!($($arg)+))

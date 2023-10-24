@@ -14,6 +14,10 @@ pub fn set_logger_std_out(is_std_out: bool) {
     *std_out = is_std_out;
 }
 
+pub fn get_logger_std_out() -> bool {
+    *LOGGER_TO_STDOUT.read().unwrap()
+}
+
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Clone, Copy)]
 pub enum MessageType { DEBUG, INFO, OK, WARN, ERROR }
@@ -101,9 +105,7 @@ pub fn print_color_and_flush(color: Option<term::color::Color>, is_bold: bool, m
 }
 
 pub fn print_message_ex(color: Option<term::color::Color>, h: &str, message: &str) {
-    let is_std_out = {
-        *LOGGER_TO_STDOUT.read().unwrap()
-    };
+    let is_std_out = get_logger_std_out();
     let mut lock = PRINT_MESSAGE_LOCK.lock().unwrap();
     print_color(is_std_out, color, true, h);
     if is_std_out {
@@ -112,6 +114,22 @@ pub fn print_message_ex(color: Option<term::color::Color>, h: &str, message: &st
         eprintln!(" {}", message)
     }
     *lock = ();
+}
+
+pub fn print_ex(message: &str, new_line: bool) {
+    if get_logger_std_out() {
+        if new_line {
+            println!("{}", message)
+        } else {
+            print!("{}", message)
+        }
+    } else {
+        if new_line {
+            eprintln!("{}", message)
+        } else {
+            eprint!("{}", message)
+        }
+    }
 }
 
 pub fn print_ok(message: &str) { print_message(MessageType::OK, message); }
