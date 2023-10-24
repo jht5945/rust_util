@@ -1,4 +1,5 @@
 use std::io::{self, Write};
+use crate::print_ex;
 
 pub const RED:    &str = "\x1B[91m";
 pub const GREEN:  &str = "\x1B[92m";
@@ -9,7 +10,7 @@ pub const END:    &str = "\x1B[0m";
 
 pub fn read_yes_no(hint: &str) -> bool {
     loop {
-        print!("{} (Yes/No): ", hint);
+        print_ex!("{} (Yes/No): ", hint);
         io::stdout().flush().ok();
         let mut buff = String::new();
         let _ = io::stdin().read_line(&mut buff).expect("Read line from stdin");
