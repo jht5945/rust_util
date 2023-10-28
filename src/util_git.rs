@@ -1,5 +1,6 @@
 use std::process::Command;
-use crate::{XResult, util_msg, util_cmd};
+
+use crate::{util_cmd, util_msg, XResult};
 
 const LANG: &str = "LANG";
 const EN_US: &str = "en_US";
@@ -75,7 +76,7 @@ pub fn git_add(working_dir: Option<&str>, files: &[String]) {
     let mut cmd = new_git_command(working_dir);
     cmd.arg("add");
     for f in files {
-        cmd.arg(&f);
+        cmd.arg(f);
     }
     util_msg::print_info(&format!("Exec: {:?}", cmd));
     if let Err(e) = util_cmd::run_command_and_wait(&mut cmd) {
@@ -89,7 +90,7 @@ pub fn git_commit(working_dir: Option<&str>, message: &str, files: &[String]) {
     cmd.arg("-m");
     cmd.arg(message);
     for f in files {
-        cmd.arg(&f);
+        cmd.arg(f);
     }
     util_msg::print_info(&format!("Exec: {:?}", cmd));
     if let Err(e) = util_cmd::run_command_and_wait(&mut cmd) {
@@ -100,19 +101,19 @@ pub fn git_commit(working_dir: Option<&str>, message: &str, files: &[String]) {
 fn parse_git_status_change(git_status: &str) -> XResult<GitStatusChange> {
     let mut git_status_change: GitStatusChange = Default::default();
     for ln in git_status.lines() {
-        if ln.starts_with("\t") {
+        if ln.starts_with('\t') {
             let ln = ln.trim();
-            if ln.starts_with("new file:") {
-                let f = ln["new file:".len()..].trim();
+            if let Some(new_file) = ln.strip_prefix("new file:") {
+                let f = new_file.trim();
                 git_status_change.added.push(f.to_owned());
-            } else if ln.starts_with("deleted:") {
-                let f = ln["deleted:".len()..].trim();
+            } else if let Some(deleted) = ln.strip_prefix("deleted:") {
+                let f = deleted.trim();
                 git_status_change.deleted.push(f.to_owned());
-            } else if ln.starts_with("modified:") {
-                let f = ln["modified:".len()..].trim();
+            } else if let Some(modified) = ln.strip_prefix("modified:") {
+                let f = modified.trim();
                 git_status_change.modified.push(f.to_owned());
-            } else if ln.starts_with("renamed:") {
-                let f = ln["renamed:".len()..].trim();
+            } else if let Some(renamed) = ln.strip_prefix("renamed:") {
+                let f = renamed.trim();
                 let mut fs = f.split("->");
                 let fa = fs.next();
                 let fb = fs.next();

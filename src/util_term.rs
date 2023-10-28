@@ -16,10 +16,10 @@ pub fn read_yes_no(hint: &str) -> bool {
         let mut buff = String::new();
         let _ = io::stdin().read_line(&mut buff).expect("Read line from stdin");
         let buff = buff.trim().to_lowercase();
-        if vec!["y", "yes"].contains(&buff.as_str()) {
+        if ["y", "yes"].contains(&buff.as_str()) {
             return true;
         }
-        if vec!["n", "no"].contains(&buff.as_str()) {
+        if ["n", "no"].contains(&buff.as_str()) {
             return false;
         }
     }

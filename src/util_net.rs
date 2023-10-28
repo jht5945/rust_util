@@ -11,6 +11,12 @@ pub struct IpAndIpMaskMatcher {
     ip_and_ip_mask_set: HashSet<u64>,
 }
 
+impl Default for IpAndIpMaskMatcher {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl IpAndIpMaskMatcher {
     pub fn new() -> Self {
         IpAndIpMaskMatcher {
@@ -133,7 +139,7 @@ impl IpAddressMask {
                 let socket_addr_v4_octets = socket_addr_v4.ip().octets();
                 match self {
                     IpAddressMask::Ipv4(self_ipv4_octets, mask) => {
-                        let self_ipv4_u32 = ipv4_to_u32(&self_ipv4_octets);
+                        let self_ipv4_u32 = ipv4_to_u32(self_ipv4_octets);
                         let addr_ipv4_u32 = ipv4_to_u32(&socket_addr_v4_octets);
                         let mask_u32 = ipv4_mask(*mask);
                         self_ipv4_u32 & mask_u32 == addr_ipv4_u32 & mask_u32

@@ -1,5 +1,6 @@
 use std::env;
 use std::path::PathBuf;
+
 use crate::iff;
 
 pub fn is_macos() -> bool {
@@ -19,7 +20,7 @@ pub fn get_user_home() -> Option<String> {
 }
 
 pub fn get_full_work_dir() -> Option<String> {
-    PathBuf::from(".").canonicalize().ok().map(|p| {
+    PathBuf::from(".").canonicalize().ok().and_then(|p| {
         p.to_str().map(ToString::to_string)
-    }).flatten()
+    })
 }

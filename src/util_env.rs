@@ -10,10 +10,10 @@ pub fn is_env_off(var: &str) -> bool {
 
 pub fn is_on(val: &str) -> bool {
     let lower_val = val.to_lowercase();
-    vec!["true", "yes", "1"].iter().any(|x| *x == lower_val)
+    ["true", "yes", "1"].iter().any(|x| *x == lower_val)
 }
 
 pub fn is_off(val: &str) -> bool {
     let lower_val = val.to_lowercase();
-    vec!["false", "no", "0"].iter().any(|x| *x == lower_val)
+    ["false", "no", "0"].iter().any(|x| *x == lower_val)
 }

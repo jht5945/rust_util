@@ -10,7 +10,7 @@ pub struct JoinFilesReader {
 }
 
 fn open_file_as_lines(f: &str) -> XResult<Lines<BufReader<File>>> {
-    let f = File::open(&f)?;
+    let f = File::open(f)?;
     let br = BufReader::new(f);
     use std::io::BufRead;
     Ok(br.lines())
@@ -191,7 +191,7 @@ fn walk_dir_with_depth_check<FError, FProcess, FFilter>(depth: &mut u32, dir: &P
     let read_dir = match dir.read_dir() {
         Ok(rd) => rd,
         Err(err) => {
-            func_walk_error(&dir, Box::new(err));
+            func_walk_error(dir, Box::new(err));
             return Ok(());
         }
     };
@@ -199,7 +199,7 @@ fn walk_dir_with_depth_check<FError, FProcess, FFilter>(depth: &mut u32, dir: &P
         let dir_entry = match dir_entry_item {
             Ok(item) => item,
             Err(err) => {
-                func_walk_error(&dir, Box::new(err));
+                func_walk_error(dir, Box::new(err));
                 continue; // Ok?
             }
         };
@@ -207,11 +207,11 @@ fn walk_dir_with_depth_check<FError, FProcess, FFilter>(depth: &mut u32, dir: &P
         let path_buf = dir_entry.path();
         let sub_dir = path_buf.as_path();
         if sub_dir.is_file() {
-            func_process_file(&sub_dir);
-        } else if sub_dir.is_dir() && func_filter_dir(&sub_dir) {
+            func_process_file(sub_dir);
+        } else if sub_dir.is_dir() && func_filter_dir(sub_dir) {
             *depth += 1;
-            if let Err(err) = walk_dir_with_depth_check(depth, &sub_dir, func_walk_error, func_process_file, func_filter_dir) {
-                func_walk_error(&sub_dir, err);
+            if let Err(err) = walk_dir_with_depth_check(depth, sub_dir, func_walk_error, func_process_file, func_filter_dir) {
+                func_walk_error(sub_dir, err);
             }
             *depth -= 1;
         } // should process else ? not file, dir

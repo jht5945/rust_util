@@ -1,11 +1,11 @@
-use std::io::{self, Write, ErrorKind, prelude::*};
 use std::fs::File;
-use std::time::{SystemTime, Duration};
+use std::io::{self, ErrorKind, prelude::*, Write};
+use std::time::{Duration, SystemTime};
 
 use crate::{SimpleError, XResult};
-use crate::util_size;
-use crate::util_msg;
 use crate::util_file;
+use crate::util_msg;
+use crate::util_size;
 
 pub const DEFAULT_BUF_SIZE: usize = 8 * 1024;
 
@@ -79,7 +79,7 @@ pub fn get_read_stdin_or_file(file: &str) -> XResult<Box<dyn Read>> {
     if file.is_empty() {
         Ok(Box::new(io::stdin()))
     } else {
-        match File::open(&util_file::resolve_file_path(file)) {
+        match File::open(util_file::resolve_file_path(file)) {
             Ok(f) => Ok(Box::new(f)),
             Err(err) => Err(SimpleError::new(format!("Open file {}, erorr: {}", file, err)).into()),
         }
@@ -145,7 +145,7 @@ pub fn print_status_last_line(head: &str, total: i64, written: i64, print_status
     }
     let cost_as_secs = cost.as_secs();
     if cost_as_secs > 0 {
-        download_speed = format!("{}/s", util_size::get_display_size((written / (cost_as_secs as i64)) as i64));
+        download_speed = format!("{}/s", util_size::get_display_size(written / (cost_as_secs as i64)));
     }
     if total > 0 {
         util_msg::print_lastline(&format!("{}, Total: {}, Finished: {}, Speed: {}",

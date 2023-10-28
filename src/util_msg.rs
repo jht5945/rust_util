@@ -55,7 +55,7 @@ pub fn get_logger_level() -> MessageType {
 }
 
 pub fn is_atty() -> bool {
-    let stdout_fileno = unsafe { libc::isatty(libc::STDOUT_FILENO as i32) };
+    let stdout_fileno = unsafe { libc::isatty(libc::STDOUT_FILENO) };
     stdout_fileno != 0
 }
 
@@ -124,6 +124,7 @@ pub fn print_ex(message: &str, new_line: bool) {
             print!("{}", message)
         }
     } else {
+        #[allow(clippy::collapsible_else_if)]
         if new_line {
             eprintln!("{}", message)
         } else {
@@ -146,6 +147,10 @@ pub fn print_debug(message: &str) { print_message(MessageType::DEBUG, message); 
 pub fn is_logger_level_enabled(mt: MessageType) -> bool {
     let logger_level = *LOGGER_LEVEL;
     mt.get_u8_value() >= logger_level.get_u8_value()
+}
+
+pub fn when_debug<F>(f: F) where F: Fn() {
+    when(MessageType::DEBUG, f)
 }
 
 pub fn when<F>(mt: MessageType, f: F) where F: Fn() {
@@ -206,9 +211,9 @@ pub fn get_term_width_message(message: &str, left: usize) -> String {
                 return message.to_string();
             }
             let mut s = String::new();
-            s.push_str(&message[0..find_char_boundary(&message, w - 10 - 5 - left)]);
+            s.push_str(&message[0..find_char_boundary(message, w - 10 - 5 - left)]);
             s.push_str("[...]");
-            s.push_str(&message[find_char_boundary(&message, len - 10)..]);
+            s.push_str(&message[find_char_boundary(message, len - 10)..]);
             s
         }
     }
