@@ -13,7 +13,7 @@ pub fn parse_size(size: &str) -> XResult<i64> {
         lower_size.ends_with('b'), &lower_size[0..lower_size.len()-1], &lower_size
     );
     let parse_and_process_size = |mul: i64| -> XResult<i64> {
-        Ok((mul as f64 * no_last_b_size[0..no_last_b_size.len()-1].parse::<f64>()?) as i64)
+        Ok((mul as f64 * no_last_b_size[0..no_last_b_size.len() - 1].parse::<f64>()?) as i64)
     };
     match no_last_b_size.chars().last() {
         Some('k') => parse_and_process_size(SIZE_KB),
@@ -27,17 +27,17 @@ pub fn parse_size(size: &str) -> XResult<i64> {
 
 pub fn get_display_size(size: i64) -> String {
     if size < SIZE_KB {
-        size.to_string()
+        format!("{} {}", size, crate::iff!(size == 1, "byte", "bytes" ))
     } else if size < SIZE_MB {
-        format!("{:.*}KB", 2, (size as f64) / SIZE_KB as f64)
+        format!("{:.*}KiB", 2, (size as f64) / SIZE_KB as f64)
     } else if size < SIZE_GB {
-        format!("{:.*}MB", 2, (size as f64) / SIZE_MB as f64)
+        format!("{:.*}MiB", 2, (size as f64) / SIZE_MB as f64)
     } else if size < SIZE_TB {
-        format!("{:.*}GB", 2, (size as f64) / SIZE_GB as f64)
+        format!("{:.*}GiB", 2, (size as f64) / SIZE_GB as f64)
     } else if size < SIZE_PB {
-        format!("{:.*}TB", 2, (size as f64) / SIZE_TB as f64)
+        format!("{:.*}TiB", 2, (size as f64) / SIZE_TB as f64)
     } else {
-        format!("{:.*}PB", 2, (size as f64) / SIZE_PB as f64)
+        format!("{:.*}PiB", 2, (size as f64) / SIZE_PB as f64)
     }
 }
 
@@ -54,11 +54,11 @@ fn test_parse_size() {
 
 #[test]
 fn test_get_display_size() {
-    assert_eq!(get_display_size(0), "0");
-    assert_eq!(get_display_size(111), "111");
-    assert_eq!(get_display_size(1024), "1.00KB");
-    assert_eq!(get_display_size(1024 * 1024), "1.00MB");
-    assert_eq!(get_display_size(1024 * 1024 * 1024), "1.00GB");
-    assert_eq!(get_display_size(1024 * 1024 * 1024 * 1024), "1.00TB");
-    assert_eq!(get_display_size(1024 * 1024 * 1024 * 1024 * 1024), "1.00PB");
+    assert_eq!(get_display_size(0), "0 bytes");
+    assert_eq!(get_display_size(111), "111 bytes");
+    assert_eq!(get_display_size(1024), "1.00KiB");
+    assert_eq!(get_display_size(1024 * 1024), "1.00MiB");
+    assert_eq!(get_display_size(1024 * 1024 * 1024), "1.00GiB");
+    assert_eq!(get_display_size(1024 * 1024 * 1024 * 1024), "1.00TiB");
+    assert_eq!(get_display_size(1024 * 1024 * 1024 * 1024 * 1024), "1.00PiB");
 }
