@@ -1,12 +1,19 @@
 use std::env;
 use std::io::{self, Write};
 use std::sync::{Arc, Mutex, RwLock};
+use std::sync::mpsc::Sender;
 
 lazy_static! {
     pub static ref IS_ATTY: bool = is_atty();
     static ref LOGGER_LEVEL: MessageType = get_logger_level();
+    static ref LOGGER_SENDER: Arc<RwLock<Option<Sender<String>>>> = Arc::new(RwLock::new(None));
     static ref LOGGER_TO_STDOUT: Arc<RwLock<bool>> = Arc::new(RwLock::new(true));
     static ref PRINT_MESSAGE_LOCK: Arc<Mutex<()>> = Arc::new(Mutex::new(()));
+}
+
+pub fn set_logger_sender(sender: Sender<String>) {
+    let mut logger_sender_opt = LOGGER_SENDER.write().unwrap();
+    logger_sender_opt.replace(sender);
 }
 
 pub fn set_logger_std_out(is_std_out: bool) {
@@ -105,6 +112,13 @@ pub fn print_color_and_flush(color: Option<term::color::Color>, is_bold: bool, m
 }
 
 pub fn print_message_ex(color: Option<term::color::Color>, h: &str, message: &str) {
+    {
+        let logger_sender_opt = LOGGER_SENDER.read().unwrap();
+        if let Some(logger_sender) = &*logger_sender_opt {
+            logger_sender.send(format!("{} {}", h, message)).ok();
+            return;
+        }
+    }
     let is_std_out = get_logger_std_out();
     let mut lock = PRINT_MESSAGE_LOCK.lock().unwrap();
     print_color(is_std_out, color, true, h);

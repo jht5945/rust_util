@@ -1,10 +1,22 @@
 #[macro_use] extern crate rust_util;
 
+use std::sync::mpsc::channel;
+use std::thread;
 use rust_util::{XResult, SimpleError};
-use rust_util::util_msg::set_logger_std_out;
+use rust_util::util_msg::{set_logger_sender, set_logger_std_out};
 
 // cargo run --example log
 fn main() -> XResult<()> {
+    let (sender, receiver) = channel::<String>();
+    set_logger_sender(sender);
+
+    let _t = thread::spawn(move || {
+        loop {
+            let msg = receiver.recv();
+            println!("[RECV]: {:?}", msg)
+        }
+    });
+
     std::env::set_var("LOGGER_LEVEL", "*");
     println!(r##"env LOGGER_LEVEL set to:
 debug or *
