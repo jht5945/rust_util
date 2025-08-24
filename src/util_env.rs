@@ -17,3 +17,15 @@ pub fn is_off(val: &str) -> bool {
     let lower_val = val.to_lowercase();
     ["false", "no", "0"].iter().any(|x| *x == lower_val)
 }
+
+pub fn env_var(var: &str) -> Option<String> {
+    let var_from_env = env::var(var).ok();
+    if var_from_env.is_some() {
+        return var_from_env;
+    }
+    let var_content = crate::util_file::read_file_content(&format!("~/.config/envs/{}", var));
+    if let Ok(var_content) = var_content {
+        return Some(var_content.trim().to_string());
+    }
+    None
+}
