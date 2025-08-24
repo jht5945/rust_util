@@ -1,11 +1,11 @@
 use std::env;
 
 pub fn is_env_on(var: &str) -> bool {
-    env::var(var).ok().map(|val| is_on(&val)).unwrap_or(false)
+    env_var(var).map(|val| is_on(&val)).unwrap_or(false)
 }
 
 pub fn is_env_off(var: &str) -> bool {
-    env::var(var).ok().map(|val| is_off(&val)).unwrap_or(false)
+    env_var(var).map(|val| is_off(&val)).unwrap_or(false)
 }
 
 pub fn is_on(val: &str) -> bool {
